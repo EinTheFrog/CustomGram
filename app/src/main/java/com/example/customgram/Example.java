@@ -1,0 +1,492 @@
+package com.example.customgram;
+
+import android.os.Build;
+import android.util.Log;
+
+import org.drinkless.td.libcore.telegram.Client;
+import org.drinkless.td.libcore.telegram.TdApi;
+
+import java.io.IOError;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.NavigableSet;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+
+/**
+ * Example class for TDLib usage from Java.
+ */
+public final class Example {
+    private static int apiId;
+    private static String apiHash;
+    private static String systemLanguageCode;
+    private static String authenticationCode;
+
+    private static ChatManager chatManager;
+    private static Consumer<TdApi.AuthorizationState> onStateChange;
+    private static FileHandler fileHandler = new FileHandler();
+
+    private static volatile boolean havePhoneNumber = false;
+    private static final Lock phoneNumberLock = new ReentrantLock();
+    private static final Condition gotPhoneNumber = phoneNumberLock.newCondition();
+
+    private static int mChatsLimit  = 20;
+    private static long mChatId = 0;
+    private static String mMessageText = "";
+
+    private static Client client = null;
+    private static String databaseDirectory = "tdlib";
+    private final static String PHONE_PREFIX = "999662";
+    private static String phoneNumber = PHONE_PREFIX + "1111";
+
+    public static TdApi.AuthorizationState authorizationState = null;
+    private static volatile boolean needQuit = false;
+
+    private static final Client.ResultHandler defaultHandler = new DefaultHandler();
+
+    private static final ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Long> photoRemoteIdsToChatIds = new ConcurrentHashMap<>();
+
+    private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<OrderedChat>();
+    private static boolean haveFullMainChatList = false;
+
+    private static final String newLine = System.getProperty("line.separator");
+
+    static {
+        try {
+            System.loadLibrary("tdjni");
+        } catch (UnsatisfiedLinkError e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setChatViewManager(ChatManager manager) {
+        chatManager = manager;
+    }
+
+    public static void setOnStateChange(Consumer<TdApi.AuthorizationState> fun) {
+        onStateChange = fun;
+    }
+
+
+    public static List<TdApi.Chat> getChats() {
+        List<TdApi.Chat> list = new ArrayList<>();
+        for (OrderedChat orderedChat: mainChatList) {
+            list.add(chats.get(orderedChat.chatId));
+        }
+        return list;
+    }
+
+    public static void setPhoneNumber(String number) {
+        phoneNumber = PHONE_PREFIX + number;
+    }
+
+    public static void enablePhoneNumber() {
+        havePhoneNumber = true;
+        phoneNumberLock.lock();
+        try {
+            gotPhoneNumber.signal();
+        } finally {
+            phoneNumberLock.unlock();
+        }
+    }
+
+    private static void disablePhoneNumber() {
+        havePhoneNumber = false;
+    }
+
+    private static String getDeviceName() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        if (model.toLowerCase().startsWith(manufacturer.toLowerCase())) {
+            return capitalize(model);
+        } else {
+            return capitalize(manufacturer) + " " + model;
+        }
+    }
+
+    private static String capitalize(String s) {
+        if (s == null || s.length() == 0) {
+            return "";
+        }
+        char first = s.charAt(0);
+        if (Character.isUpperCase(first)) {
+            return s;
+        } else {
+            return Character.toUpperCase(first) + s.substring(1);
+        }
+    }
+
+    private static void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) {
+        if (authorizationState != null) {
+            Example.authorizationState = authorizationState;
+            onStateChange.accept(authorizationState);
+        }
+        switch (Example.authorizationState.getConstructor()) {
+            case TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR:
+                TdApi.TdlibParameters parameters = new TdApi.TdlibParameters();
+                parameters.databaseDirectory = databaseDirectory;
+                parameters.useMessageDatabase = true;
+                parameters.useSecretChats = true;
+                parameters.apiId = apiId;
+                parameters.apiHash = apiHash;
+                parameters.systemLanguageCode = systemLanguageCode;
+                parameters.deviceModel = getDeviceName();
+                parameters.applicationVersion = "1.0";
+                parameters.enableStorageOptimizer = true;
+                parameters.useTestDc = true;
+                parameters.systemVersion = Build.VERSION.CODENAME;
+
+                client.send(new TdApi.SetTdlibParameters(parameters), new AuthorizationRequestHandler());
+                break;
+            case TdApi.AuthorizationStateWaitEncryptionKey.CONSTRUCTOR:
+                client.send(new TdApi.CheckDatabaseEncryptionKey(), new AuthorizationRequestHandler());
+                break;
+            case TdApi.AuthorizationStateWaitPhoneNumber.CONSTRUCTOR: {
+                phoneNumberLock.lock();
+                try {
+                    while (!havePhoneNumber) {
+                        gotPhoneNumber.await();
+                    }
+                } catch (InterruptedException e) {
+                    Log.e("Example", e.getMessage());
+                }
+                finally {
+                    phoneNumberLock.unlock();
+                }
+                client.send(new TdApi.SetAuthenticationPhoneNumber(phoneNumber, null), new AuthorizationRequestHandler());
+                disablePhoneNumber();
+                break;
+            }
+            case TdApi.AuthorizationStateWaitCode.CONSTRUCTOR: {
+                client.send(new TdApi.CheckAuthenticationCode(authenticationCode), new AuthorizationRequestHandler());
+                break;
+            }
+            case TdApi.AuthorizationStateWaitPassword.CONSTRUCTOR: {
+                client.send(new TdApi.LogOut(), defaultHandler);
+                break;
+            }
+            case TdApi.AuthorizationStateClosed.CONSTRUCTOR:
+                Log.e("Example" , "Closed");
+                if (!needQuit) {
+                    client = Client.create(new UpdateHandler(), null, null); // recreate client after previous has closed
+                }
+                break;
+            default:
+                Log.e("Example", "Unsupported authorization state:" + newLine + Example.authorizationState);
+        }
+    }
+
+    public enum Command {
+        GET_CHATS, GET_CHAT, GET_ME, SEND_MESSAGE, LOG_OUT, QUIT
+    }
+
+    public static void setCommandArgs(int chatsLimit, long chatId, String messageText) {
+        if (chatsLimit > 0) {
+            mChatsLimit = chatsLimit;
+        }
+        if (chatId > 0) {
+            mChatId = chatId;
+        }
+        if (!messageText.equals("")) {
+            mMessageText = messageText;
+        }
+    }
+
+    public static void executeCommand(Command cmd) {
+        try {
+            switch (cmd) {
+                case GET_CHATS:
+                    getMainChatList(mChatsLimit);
+                    break;
+                case LOG_OUT:
+                    mainChatList.clear();
+                    haveFullMainChatList = false;
+                    client.send(new TdApi.LogOut(), defaultHandler);
+                    break;
+                case QUIT:
+                    needQuit = true;
+                    client.send(new TdApi.Close(), defaultHandler);
+                    break;
+                default:
+                    System.err.println("Unsupported command");
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Log.e("Example", "Not enough arguments");
+        }
+    }
+
+    public static void main(String dbDir, String logFileName, int apiId,
+                            String apiHash, String systemLanguageCode, String authenticationCode
+    ) throws InterruptedException {
+        databaseDirectory = dbDir;
+        Example.apiId = apiId;
+        Example.apiHash = apiHash;
+        Example.systemLanguageCode = systemLanguageCode;
+        Example.authenticationCode = authenticationCode;
+
+        Client.execute(new TdApi.SetLogVerbosityLevel(4));
+
+        TdApi.Object result = Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile(dbDir + logFileName, 1 << 27, true)));
+        if (result instanceof TdApi.Error) {
+            throw new IOError(new IOException("Write access to the current directory is required"));
+        }
+
+        // create client
+        client = Client.create(new UpdateHandler(), null, null);
+
+        // test Client.execute
+        //defaultHandler.onResult(Client.execute(new TdApi.GetTextEntities("@telegram /test_command https://telegram.org telegram.me @gif @test")));
+    }
+
+    private static void getMainChatList(final int limit) {
+        synchronized (mainChatList) {
+            if (!haveFullMainChatList && limit > mainChatList.size()) {
+                int chatsToLoadLeft = limit - mainChatList.size();
+                client.send(
+                        new TdApi.LoadChats(new TdApi.ChatListMain(), chatsToLoadLeft),
+                        new ChatHandler(limit)
+                );
+            }
+        }
+    }
+
+    private static void setChatPositions(TdApi.Chat chat, TdApi.ChatPosition[] positions) {
+        synchronized (mainChatList) {
+            synchronized (chat) {
+                for (TdApi.ChatPosition position : chat.positions) {
+                    if (position.list.getConstructor() == TdApi.ChatListMain.CONSTRUCTOR) {
+                        boolean isRemoved = mainChatList.remove(new OrderedChat(chat.id, position));
+                        assert isRemoved;
+                    }
+                }
+
+                chat.positions = positions;
+
+                for (TdApi.ChatPosition position : chat.positions) {
+                    if (position.list.getConstructor() == TdApi.ChatListMain.CONSTRUCTOR) {
+                        boolean isAdded = mainChatList.add(new OrderedChat(chat.id, position));
+                        int chatPos = getChatPosition(chat.id, mainChatList);
+                        chatManager.addChat(chat, chatPos);
+                        assert isAdded;
+                    }
+                }
+            }
+        }
+    }
+
+    private static int getChatPosition(Long chatId, NavigableSet<OrderedChat> set) {
+        int pos = 0;
+        for(OrderedChat orderedChat: set) {
+            if (chatId == orderedChat.chatId) return pos;
+            pos++;
+        }
+        throw new IllegalArgumentException();
+    }
+
+
+    private static void addChat(TdApi.Chat chat) {
+        chats.put(chat.id, chat);
+
+        TdApi.ChatPosition[] positions = chat.positions.clone();
+        chat.positions = new TdApi.ChatPosition[0];
+        setChatPositions(chat, positions);
+
+        boolean chatHasPhoto = chat.photo != null;
+        if (!chatHasPhoto) return;
+        photoRemoteIdsToChatIds.put(chat.photo.small.remote.id, chat.id);
+        boolean needToLoadChatPhoto = chat.photo.small.local.path.equals("");
+        if (needToLoadChatPhoto) {
+            getFileInfo(chat.photo.small.remote.id);
+        }
+    }
+
+    private static void getFileInfo(String id) {
+        client.send(
+                new TdApi.GetRemoteFile(
+                        id,
+                        new TdApi.FileTypeProfilePhoto()
+                ),
+                fileHandler
+        );
+    }
+
+    private static void downloadFile(int id) {
+        client.send(
+                new TdApi.DownloadFile(id, 31, 0, 0, true),
+                fileHandler
+        );
+    }
+
+    private static class DefaultHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            Log.i("Example", object.toString());
+        }
+    }
+
+    private static class FileHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.File.CONSTRUCTOR:
+                    TdApi.File file = (TdApi.File) object;
+                    downloadFile(file.id);
+                    break;
+                case TdApi.UpdateFile.CONSTRUCTOR:
+                    break;
+                default:
+                    Log.e("Example", "Can't handle such result");
+            }
+        }
+    }
+
+    private static class ChatHandler implements Client.ResultHandler {
+        final int limit;
+
+        public ChatHandler(int limit) {
+            this.limit = limit;
+        }
+
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.Error.CONSTRUCTOR:
+                    if (((TdApi.Error) object).code == 404) {
+                        synchronized (mainChatList) {
+                            haveFullMainChatList = true;
+                        }
+                    } else {
+                        Log.e("Example",
+                              "Receive an error for LoadChats:" + newLine + object
+                        );
+                    }
+                    break;
+                case TdApi.Ok.CONSTRUCTOR:
+                    // chats had already been received through updates, let's retry request
+                    getMainChatList(limit);
+                    break;
+                default:
+                    Log.e("Example",
+                          "Receive wrong response from TDLib:" + newLine + object
+                    );
+            }
+        }
+    }
+
+    private static class UpdateHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.UpdateAuthorizationState.CONSTRUCTOR:
+                    onAuthorizationStateUpdated(((TdApi.UpdateAuthorizationState) object).authorizationState);
+                    break;
+                case TdApi.UpdateNewChat.CONSTRUCTOR: {
+                    TdApi.UpdateNewChat updateNewChat = (TdApi.UpdateNewChat) object;
+                    TdApi.Chat chat = updateNewChat.chat;
+                    synchronized (chat) {
+                        addChat(chat);
+                    }
+                    break;
+                }
+                case TdApi.UpdateChatLastMessage.CONSTRUCTOR: {
+                    TdApi.UpdateChatLastMessage lastMessage = (TdApi.UpdateChatLastMessage) object;
+                    TdApi.Chat chat = chats.get(lastMessage.chatId);
+                    chat.lastMessage = lastMessage.lastMessage;
+                    chatManager.addChatLastMessage(chat);
+                    break;
+                }
+                case TdApi.UpdateChatPosition.CONSTRUCTOR: {
+                    TdApi.UpdateChatPosition updateChat = (TdApi.UpdateChatPosition) object;
+                    if (updateChat.position.list.getConstructor() != TdApi.ChatListMain.CONSTRUCTOR) {
+                        break;
+                    }
+
+                    TdApi.Chat chat = chats.get(updateChat.chatId);
+                    synchronized (chat) {
+                        List<TdApi.ChatPosition> positions = new ArrayList<>();
+                        if (updateChat.position.order != 0) {
+                            positions.add(updateChat.position);
+                        }
+                        for (int i = 0; i < chat.positions.length; i++) {
+                            if (chat.positions[i].list.getConstructor() != TdApi.ChatListMain.CONSTRUCTOR) {
+                                positions.add(chat.positions[i]);
+                            }
+                        }
+                        TdApi.ChatPosition[] positionsArray = new TdApi.ChatPosition[positions.size()];
+                        positions.toArray(positionsArray);
+                        setChatPositions(chat, positionsArray);
+                    }
+                    break;
+                }
+                case TdApi.UpdateFile.CONSTRUCTOR:
+                    Log.d("UPDATE FILE", "Got UpdateFile");
+                    TdApi.UpdateFile photo = (TdApi.UpdateFile) object;
+                    Long chatId = photoRemoteIdsToChatIds.get(photo.file.remote.id);
+                    if (chatId == null) {
+                        break;
+                    }
+                    Log.d("UPDATE FILE", "Path: " + photo.file.local.path);
+                    TdApi.Chat chatWithPhoto = chats.get(chatId);
+                    chatWithPhoto.photo.small.local.path = photo.file.local.path;
+                    chatManager.addChatPhoto(chatWithPhoto);
+                    break;
+                default:
+                    Log.e("Example","Unsupported update:" + newLine + object);
+            }
+        }
+    }
+
+    private static class AuthorizationRequestHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.Error.CONSTRUCTOR:
+                    System.err.println("Receive an error:" + newLine + object);
+                    onAuthorizationStateUpdated(null); // repeat last action
+                    break;
+                case TdApi.Ok.CONSTRUCTOR:
+                    // result is already received through UpdateAuthorizationState, nothing to do
+                    break;
+                default:
+                    System.err.println("Receive wrong response from TDLib:" + newLine + object);
+            }
+        }
+    }
+
+    private static class OrderedChat implements Comparable<OrderedChat> {
+        final long chatId;
+        final TdApi.ChatPosition position;
+
+        OrderedChat(long chatId, TdApi.ChatPosition position) {
+            this.chatId = chatId;
+            this.position = position;
+        }
+
+        @Override
+        public int compareTo(OrderedChat o) {
+            if (this.position.order != o.position.order) {
+                return o.position.order < this.position.order ? -1 : 1;
+            }
+            if (this.chatId != o.chatId) {
+                return o.chatId < this.chatId ? -1 : 1;
+            }
+            return 0;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            OrderedChat o = (OrderedChat) obj;
+            return this.chatId == o.chatId && this.position.order == o.position.order;
+        }
+    }
+}
