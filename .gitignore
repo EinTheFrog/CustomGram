@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/res/values/strings.xml
+/app/src/main/res/values/integers.xml
+/logs
