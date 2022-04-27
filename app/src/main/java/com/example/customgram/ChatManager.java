@@ -14,11 +14,13 @@ import java.util.function.Consumer;
 
 public class ChatManager {
     private final List<TdApi.Chat> chats = new LinkedList<>();
+    private final List<TdApi.Message> messages = new ArrayList<>();
     private static ChatManager instance;
     private BiConsumer<TdApi.Chat, Integer> onNewChat;
     private Consumer<TdApi.Chat> onRemoveChat;
     private Consumer<TdApi.Chat> onChatPhotoChange;
     private Consumer<TdApi.Chat> onChatLastMessageChange;
+    private Consumer<TdApi.Message> onNewMessage;
 
     private ChatManager() {
     }
@@ -56,6 +58,13 @@ public class ChatManager {
         }
     }
 
+    public void addMessage(TdApi.Message message) {
+        messages.add(message);
+        if (onNewMessage != null) {
+            onNewMessage.accept(message);
+        }
+    }
+
     public void setOnNewChat(BiConsumer<TdApi.Chat, Integer> fun) {
         onNewChat = fun;
     }
@@ -63,7 +72,6 @@ public class ChatManager {
     public void setOnRemoveChat(Consumer<TdApi.Chat> fun) {
         onRemoveChat = fun;
     }
-
 
     public List<TdApi.Chat> getChats() {
         return new LinkedList<>(chats);
@@ -79,5 +87,17 @@ public class ChatManager {
 
     public void setOnChatLastMessageChange(Consumer<TdApi.Chat> fun) {
         onChatLastMessageChange = fun;
+    }
+
+    public void setOnNewMessage(Consumer<TdApi.Message> fun) {
+        onNewMessage = fun;
+    }
+
+    public List<TdApi.Message> getMessages() {
+        return new ArrayList<>(messages);
+    }
+
+    public void clearMessages() {
+        messages.clear();
     }
 }

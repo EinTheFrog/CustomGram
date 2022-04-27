@@ -17,10 +17,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.drinkless.td.libcore.telegram.TdApi;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ChatRecyclerViewAdapter extends
         RecyclerView.Adapter<ChatRecyclerViewAdapter.ViewHolder> {
+    private static final String TAG = "RECYCLER";
+
     private final List<TdApi.Chat> mChats;
+    private Consumer<Integer> onChatClicked;
 
     public ChatRecyclerViewAdapter(List<TdApi.Chat> chats) {
         mChats = chats;
@@ -28,17 +32,21 @@ public class ChatRecyclerViewAdapter extends
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view =
-                LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.list_item_chat, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        //Log.d("CHATS_DEBUG", "Setting up ViewHolder for view with position: " + position);
         TdApi.Chat chat = mChats.get(position);
         holder.chatTitle.setText(chat.title);
+
+        holder.parentView.findViewById(R.id.chat_button).setOnClickListener(v -> {
+            if (onChatClicked != null) {
+                onChatClicked.accept(position);
+            }
+        });
 
         String text = "";
         TdApi.Message lstMsg = chat.lastMessage;
@@ -49,7 +57,7 @@ public class ChatRecyclerViewAdapter extends
         holder.lastMsg.setText(text);
 
         if (chat.photo != null && !chat.photo.small.local.path.equals("")) {
-            Log.d("RECYCLER", "Adding photo to chat with name: " + chat.title);
+            Log.d(TAG, "Adding photo to chat with name: " + chat.title);
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(chat.photo.small.local.path, bmOptions);
             holder.chatPhoto.setImageBitmap(bitmap);
@@ -77,11 +85,15 @@ public class ChatRecyclerViewAdapter extends
                     String firstWord = words[0];
                     String lastWord = words[words.length - 1];
                     altPhotoText = Character.toString(firstWord.charAt(0)) + lastWord.charAt(0);
-                    break;
                 }
             }
+            altPhotoText = altPhotoText.toUpperCase();
             holder.altChatPhotoText.setText(altPhotoText);
         }
+    }
+
+    public void setOnChatClicked(Consumer<Integer> fun) {
+        this.onChatClicked = fun;
     }
 
     @Override

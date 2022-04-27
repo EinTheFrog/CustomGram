@@ -3,11 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="100dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <ImageView
+
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/chat_img"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/blue"
+        app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -16,8 +18,10 @@
         android:id="@+id/alt_chat_img"
         android:text="DB"
         android:autoSizeTextType="uniform"
+        android:textAlignment="center"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_margin="20dp"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -41,4 +45,10 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/chat_img"
         app:layout_constraintRight_toRightOf="parent" />
+    <Button
+        android:id="@+id/chat_button"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

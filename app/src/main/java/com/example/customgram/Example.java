@@ -26,6 +26,8 @@ import java.util.function.Consumer;
  * Example class for TDLib usage from Java.
  */
 public final class Example {
+    private static final String TAG = "EXAMPLE";
+
     private static int apiId;
     private static String apiHash;
     private static String systemLanguageCode;
@@ -58,6 +60,8 @@ public final class Example {
 
     private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<OrderedChat>();
     private static boolean haveFullMainChatList = false;
+
+    private static TdApi.Message[] currentMessages;
 
     private static final String newLine = System.getProperty("line.separator");
 
@@ -158,7 +162,7 @@ public final class Example {
                         gotPhoneNumber.await();
                     }
                 } catch (InterruptedException e) {
-                    Log.e("Example", e.getMessage());
+                    Log.e(TAG, e.getMessage());
                 }
                 finally {
                     phoneNumberLock.unlock();
@@ -176,18 +180,18 @@ public final class Example {
                 break;
             }
             case TdApi.AuthorizationStateClosed.CONSTRUCTOR:
-                Log.e("Example" , "Closed");
+                Log.e(TAG , "Closed");
                 if (!needQuit) {
                     client = Client.create(new UpdateHandler(), null, null); // recreate client after previous has closed
                 }
                 break;
             default:
-                Log.e("Example", "Unsupported authorization state:" + newLine + Example.authorizationState);
+                Log.e(TAG, "Unsupported authorization state:" + newLine + Example.authorizationState);
         }
     }
 
     public enum Command {
-        GET_CHATS, GET_CHAT, GET_ME, SEND_MESSAGE, LOG_OUT, QUIT
+        GET_CHATS, GET_CHAT_HISTORY, GET_ME, SEND_MESSAGE, LOG_OUT, QUIT
     }
 
     public static void setCommandArgs(int chatsLimit, long chatId, String messageText) {
@@ -197,7 +201,7 @@ public final class Example {
         if (chatId > 0) {
             mChatId = chatId;
         }
-        if (!messageText.equals("")) {
+        if (messageText != null) {
             mMessageText = messageText;
         }
     }
@@ -207,6 +211,14 @@ public final class Example {
             switch (cmd) {
                 case GET_CHATS:
                     getMainChatList(mChatsLimit);
+                    break;
+                case GET_CHAT_HISTORY:
+                    client.send(
+                            new TdApi.GetChatHistory(
+                                    mChatId, 0, 0, 20, false
+                            ),
+                            new MessagesHandler()
+                    );
                     break;
                 case LOG_OUT:
                     mainChatList.clear();
@@ -221,7 +233,7 @@ public final class Example {
                     System.err.println("Unsupported command");
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            Log.e("Example", "Not enough arguments");
+            Log.e(TAG, "Not enough arguments");
         }
     }
 
@@ -330,7 +342,27 @@ public final class Example {
     private static class DefaultHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
-            Log.i("Example", object.toString());
+            Log.i(TAG, object.toString());
+        }
+    }
+
+    private static class MessagesHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.Messages.CONSTRUCTOR: {
+                    TdApi.Messages messagesObject = (TdApi.Messages) object;
+                    int size = messagesObject.messages.length;
+                    currentMessages = new TdApi.Message[size];
+                    for (int i = 0; i < size; i++) {
+                        currentMessages[i] = messagesObject.messages[i];
+                        chatManager.addMessage(currentMessages[i]);
+                    }
+                    break;
+                }
+                default:
+                    Log.e(TAG, "Receive wrong response from TDLib:" + newLine + object);
+            }
         }
     }
 
@@ -345,7 +377,7 @@ public final class Example {
                 case TdApi.UpdateFile.CONSTRUCTOR:
                     break;
                 default:
-                    Log.e("Example", "Can't handle such result");
+                    Log.e(TAG, "Receive wrong response from TDLib:" + newLine + object);
             }
         }
     }
