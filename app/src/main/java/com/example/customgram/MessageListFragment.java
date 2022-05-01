@@ -52,8 +52,8 @@ public class MessageListFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
 
-        messages.clear();
         chatManager.clearMessages();
+        Example.clearMessages();
     }
 
     private void updateNewMessage(TdApi.Message message) {

@@ -13,6 +13,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class ChatManager {
+    private static final String TAG = "CHAT_MANAGER";
+
     private final List<TdApi.Chat> chats = new LinkedList<>();
     private final List<TdApi.Message> messages = new ArrayList<>();
     private static ChatManager instance;
@@ -33,6 +35,11 @@ public class ChatManager {
     }
 
     public void addChat(TdApi.Chat chat, int pos) {
+        if (chats.contains(chat)) {
+            Log.d(TAG, "Ignoring chat with id: " + chat.id);
+            return;
+        }
+        Log.d(TAG, "Adding chat. Chats size: " + chats.size());
         chats.add(pos, chat);
         if (onNewChat != null) {
             onNewChat.accept(chat, pos);
@@ -40,6 +47,8 @@ public class ChatManager {
     }
 
     public void removeChat(TdApi.Chat chat) {
+        if (!chats.contains(chat)) return;
+        Log.d(TAG, "Removing chat: Chats size: " + chats.size());
         chats.remove(chat);
         if (onRemoveChat != null) {
             onRemoveChat.accept(chat);

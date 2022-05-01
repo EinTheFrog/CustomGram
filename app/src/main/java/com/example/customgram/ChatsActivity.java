@@ -52,6 +52,7 @@ public class ChatsActivity extends AppCompatActivity {
 
     private void onStateChange(TdApi.AuthorizationState newState) {
         if (newState.getConstructor() == TdApi.AuthorizationStateLoggingOut.CONSTRUCTOR) {
+            ChatManager.getInstance().clearChats();
             finish();
         }
     }

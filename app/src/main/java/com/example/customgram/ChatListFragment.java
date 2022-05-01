@@ -23,9 +23,9 @@ import java.util.List;
 public class ChatListFragment extends Fragment {
     private static final String TAG = "CHAT_LIST_FRAGMENT";
 
-    private ChatManager chatManager = ChatManager.getInstance();
-    private List<TdApi.Chat> chats = chatManager.getChats();
-    private ChatRecyclerViewAdapter mChatRecyclerAdapter  = new ChatRecyclerViewAdapter(chats);
+    private final ChatManager chatManager = ChatManager.getInstance();
+    private final List<TdApi.Chat> chats = chatManager.getChats();
+    private final ChatRecyclerViewAdapter mChatRecyclerAdapter  = new ChatRecyclerViewAdapter(chats);
     private AppCompatActivity activity;
 
     public ChatListFragment() {
@@ -61,45 +61,50 @@ public class ChatListFragment extends Fragment {
         return binding.getRoot();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        chats.clear();
-        chatManager.clearChats();
-    }
-
     private void updateNewChat(TdApi.Chat chat, int pos) {
-        if (chats.contains(chat)) return;
-        activity.runOnUiThread(() -> {
-            chats.add(pos, chat);
-            mChatRecyclerAdapter.notifyItemInserted(pos);
-        });
+        synchronized (chats) {
+            if (chats.contains(chat)) return;
+            Log.d(TAG, "Adding chat: Chats size: " + chats.size());
+            activity.runOnUiThread(() -> {
+                chats.add(pos, chat);
+                mChatRecyclerAdapter.notifyItemInserted(pos);
+            });
+        }
     }
 
     private void updateRemoveChat(TdApi.Chat chat) {
-        if (chats.contains(chat)) return;
-        activity.runOnUiThread(() -> {
-            int pos = chats.indexOf(chat);
-            chats.remove(chat);
-            mChatRecyclerAdapter.notifyItemRemoved(pos);
-        });
+        synchronized (chats) {
+            if (!chats.contains(chat)) return;
+            Log.d(TAG, "Removing chat: Chats size: " + chats.size());
+            activity.runOnUiThread(() -> {
+                int pos = chats.indexOf(chat);
+                chats.remove(chat);
+                mChatRecyclerAdapter.notifyItemRemoved(pos);
+                mChatRecyclerAdapter.notifyItemRangeChanged(pos, chats.size());
+            });
+        }
     }
 
     private void updateChatPhoto(TdApi.Chat chat) {
-        if (!chats.contains(chat)) return;
-        activity.runOnUiThread(() -> {
-            int pos = chats.indexOf(chat);
-            mChatRecyclerAdapter.notifyItemChanged(pos);
-        });
+        synchronized (chats) {
+            if (!chats.contains(chat)) return;
+            activity.runOnUiThread(() -> {
+                synchronized (chats) {
+                    int pos = chats.indexOf(chat);
+                    mChatRecyclerAdapter.notifyItemChanged(pos);
+                }
+            });
+        }
     }
 
     private void updateChatLastMessage(TdApi.Chat chat) {
-        if (!chats.contains(chat)) return;
-        activity.runOnUiThread(() -> {
-            int pos = chats.indexOf(chat);
-            mChatRecyclerAdapter.notifyItemChanged(pos);
-        });
+        synchronized (chats) {
+            if (!chats.contains(chat)) return;
+            activity.runOnUiThread(() -> {
+                int pos = chats.indexOf(chat);
+                mChatRecyclerAdapter.notifyItemChanged(pos);
+            });
+        }
     }
 
     private void openMessages(int pos) {

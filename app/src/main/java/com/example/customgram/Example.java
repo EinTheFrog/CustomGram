@@ -35,7 +35,8 @@ public final class Example {
 
     private static ChatManager chatManager;
     private static Consumer<TdApi.AuthorizationState> onStateChange;
-    private static FileHandler fileHandler = new FileHandler();
+    private static final FileHandler fileHandler = new FileHandler();
+    private static final MessagesHandler messagesHandler = new MessagesHandler();
 
     private static volatile boolean havePhoneNumber = false;
     private static final Lock phoneNumberLock = new ReentrantLock();
@@ -61,7 +62,7 @@ public final class Example {
     private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<OrderedChat>();
     private static boolean haveFullMainChatList = false;
 
-    private static TdApi.Message[] currentMessages;
+    private static final List<TdApi.Message> currentMessages = new ArrayList<>();
 
     private static final String newLine = System.getProperty("line.separator");
 
@@ -156,6 +157,7 @@ public final class Example {
                 client.send(new TdApi.CheckDatabaseEncryptionKey(), new AuthorizationRequestHandler());
                 break;
             case TdApi.AuthorizationStateWaitPhoneNumber.CONSTRUCTOR: {
+                Log.d(TAG, "Waiting for phone number");
                 phoneNumberLock.lock();
                 try {
                     while (!havePhoneNumber) {
@@ -213,15 +215,11 @@ public final class Example {
                     getMainChatList(mChatsLimit);
                     break;
                 case GET_CHAT_HISTORY:
-                    client.send(
-                            new TdApi.GetChatHistory(
-                                    mChatId, 0, 0, 20, false
-                            ),
-                            new MessagesHandler()
-                    );
+                    getChatHistory(0);
                     break;
                 case LOG_OUT:
                     mainChatList.clear();
+                    currentMessages.clear();
                     haveFullMainChatList = false;
                     client.send(new TdApi.LogOut(), defaultHandler);
                     break;
@@ -260,6 +258,19 @@ public final class Example {
         //defaultHandler.onResult(Client.execute(new TdApi.GetTextEntities("@telegram /test_command https://telegram.org telegram.me @gif @test")));
     }
 
+    public static void clearMessages() {
+        currentMessages.clear();
+    }
+
+    private static void getChatHistory(long fromMessageId) {
+        client.send(
+                new TdApi.GetChatHistory(
+                        mChatId, fromMessageId, 0, 20, false
+                ),
+                messagesHandler
+        );
+    }
+
     private static void getMainChatList(final int limit) {
         synchronized (mainChatList) {
             if (!haveFullMainChatList && limit > mainChatList.size()) {
@@ -278,6 +289,7 @@ public final class Example {
                 for (TdApi.ChatPosition position : chat.positions) {
                     if (position.list.getConstructor() == TdApi.ChatListMain.CONSTRUCTOR) {
                         boolean isRemoved = mainChatList.remove(new OrderedChat(chat.id, position));
+                        chatManager.removeChat(chat);
                         assert isRemoved;
                     }
                 }
@@ -353,10 +365,13 @@ public final class Example {
                 case TdApi.Messages.CONSTRUCTOR: {
                     TdApi.Messages messagesObject = (TdApi.Messages) object;
                     int size = messagesObject.messages.length;
-                    currentMessages = new TdApi.Message[size];
                     for (int i = 0; i < size; i++) {
-                        currentMessages[i] = messagesObject.messages[i];
-                        chatManager.addMessage(currentMessages[i]);
+                        currentMessages.add(messagesObject.messages[i]);
+                        chatManager.addMessage(currentMessages.get(i));
+                    }
+                    if (currentMessages.size() < 20 && size > 0) {
+                        long lastMessageId = currentMessages.get(currentMessages.size() - 1).id;
+                        getChatHistory(lastMessageId);
                     }
                     break;
                 }
@@ -398,7 +413,7 @@ public final class Example {
                             haveFullMainChatList = true;
                         }
                     } else {
-                        Log.e("Example",
+                        Log.e(TAG,
                               "Receive an error for LoadChats:" + newLine + object
                         );
                     }
@@ -408,7 +423,7 @@ public final class Example {
                     getMainChatList(limit);
                     break;
                 default:
-                    Log.e("Example",
+                    Log.e(TAG,
                           "Receive wrong response from TDLib:" + newLine + object
                     );
             }
@@ -430,11 +445,27 @@ public final class Example {
                     }
                     break;
                 }
+                case TdApi.UpdateSecretChat.CONSTRUCTOR: {
+                    Log.d(TAG, "Received secret chat");
+                    break;
+                }
                 case TdApi.UpdateChatLastMessage.CONSTRUCTOR: {
-                    TdApi.UpdateChatLastMessage lastMessage = (TdApi.UpdateChatLastMessage) object;
-                    TdApi.Chat chat = chats.get(lastMessage.chatId);
-                    chat.lastMessage = lastMessage.lastMessage;
-                    chatManager.addChatLastMessage(chat);
+                    TdApi.UpdateChatLastMessage updateChatLastMessage
+                            = (TdApi.UpdateChatLastMessage) object;
+                    TdApi.Chat chat = chats.get(updateChatLastMessage.chatId);
+                    synchronized (chat) {
+                        chat.lastMessage = updateChatLastMessage.lastMessage;
+                        setChatPositions(chat, updateChatLastMessage.positions);
+                    }
+                    break;
+                }
+                case TdApi.UpdateChatDraftMessage.CONSTRUCTOR: {
+                    TdApi.UpdateChatDraftMessage updateChatDraftMessage
+                            = (TdApi.UpdateChatDraftMessage) object;
+                    TdApi.Chat chat = chats.get(updateChatDraftMessage.chatId);
+                    synchronized (chat) {
+                        setChatPositions(chat, updateChatDraftMessage.positions);
+                    }
                     break;
                 }
                 case TdApi.UpdateChatPosition.CONSTRUCTOR: {
@@ -461,19 +492,19 @@ public final class Example {
                     break;
                 }
                 case TdApi.UpdateFile.CONSTRUCTOR:
-                    Log.d("UPDATE FILE", "Got UpdateFile");
+                    Log.d(TAG, "Got UpdateFile");
                     TdApi.UpdateFile photo = (TdApi.UpdateFile) object;
                     Long chatId = photoRemoteIdsToChatIds.get(photo.file.remote.id);
                     if (chatId == null) {
                         break;
                     }
-                    Log.d("UPDATE FILE", "Path: " + photo.file.local.path);
+                    Log.d(TAG, "Path: " + photo.file.local.path);
                     TdApi.Chat chatWithPhoto = chats.get(chatId);
                     chatWithPhoto.photo.small.local.path = photo.file.local.path;
                     chatManager.addChatPhoto(chatWithPhoto);
                     break;
                 default:
-                    Log.e("Example","Unsupported update:" + newLine + object);
+                    Log.e(TAG,"Unsupported update:" + newLine + object);
             }
         }
     }
