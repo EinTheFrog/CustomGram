@@ -1,5 +1,6 @@
 package com.example.customgram;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,8 @@ import java.util.List;
 
 public class MessageRecyclerViewAdapter
         extends RecyclerView.Adapter<MessageRecyclerViewAdapter.ViewHolder> {
+    private static final String TAG = "MESSAGE_RECYCLER_VIEW_ADAPTER";
+
     private final List<TdApi.Message> mMessages;
 
     public MessageRecyclerViewAdapter(List<TdApi.Message> messages) {
@@ -31,9 +34,11 @@ public class MessageRecyclerViewAdapter
     public void onBindViewHolder(ViewHolder holder, int position) {
         TdApi.Message message = mMessages.get(position);
         holder.messageFrom.setText(message.authorSignature);
+        Log.d(TAG, "Drawing message");
         if (message.content.getConstructor() == TdApi.MessageText.CONSTRUCTOR) {
             TdApi.MessageText messageText = (TdApi.MessageText) message.content;
             holder.messageText.setText(messageText.text.text);
+            Log.d(TAG, "Setting text: " + messageText.text.text);
         }
     }
 

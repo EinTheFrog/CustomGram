@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * Example class for TDLib usage from Java.
  */
 public final class Example {
-    private static final String TAG = "EXAMPLE";
+    private static final String TAG = "EXAMPLE_CLASS";
 
     private static int apiId;
     private static String apiHash;
@@ -200,7 +200,7 @@ public final class Example {
         if (chatsLimit > 0) {
             mChatsLimit = chatsLimit;
         }
-        if (chatId > 0) {
+        if (chatId != 0) {
             mChatId = chatId;
         }
         if (messageText != null) {
@@ -363,6 +363,7 @@ public final class Example {
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
                 case TdApi.Messages.CONSTRUCTOR: {
+                    Log.d(TAG, "Getting messages");
                     TdApi.Messages messagesObject = (TdApi.Messages) object;
                     int size = messagesObject.messages.length;
                     for (int i = 0; i < size; i++) {
