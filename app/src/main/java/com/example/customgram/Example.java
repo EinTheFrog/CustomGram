@@ -42,9 +42,7 @@ public final class Example {
     private static final Lock phoneNumberLock = new ReentrantLock();
     private static final Condition gotPhoneNumber = phoneNumberLock.newCondition();
 
-    private static int mChatsLimit  = 20;
-    private static long mChatId = 0;
-    private static String mMessageText = "";
+    private static long currentChatId = 0;
 
     private static Client client = null;
     private static String databaseDirectory = "tdlib";
@@ -63,6 +61,8 @@ public final class Example {
     private static boolean haveFullMainChatList = false;
 
     private static final List<TdApi.Message> currentMessages = new ArrayList<>();
+
+    private static final ConcurrentMap<Long, TdApi.User> users = new ConcurrentHashMap<>();
 
     private static final String newLine = System.getProperty("line.separator");
 
@@ -192,47 +192,25 @@ public final class Example {
         }
     }
 
-    public enum Command {
-        GET_CHATS, GET_CHAT_HISTORY, GET_ME, SEND_MESSAGE, LOG_OUT, QUIT
+    public static void executeGetChats(int limit) {
+        getMainChatList(limit);
     }
 
-    public static void setCommandArgs(int chatsLimit, long chatId, String messageText) {
-        if (chatsLimit > 0) {
-            mChatsLimit = chatsLimit;
-        }
-        if (chatId != 0) {
-            mChatId = chatId;
-        }
-        if (messageText != null) {
-            mMessageText = messageText;
-        }
+    public static void executeGetChatHistory(long id) {
+        currentChatId = id;
+        getChatHistory(0);
     }
 
-    public static void executeCommand(Command cmd) {
-        try {
-            switch (cmd) {
-                case GET_CHATS:
-                    getMainChatList(mChatsLimit);
-                    break;
-                case GET_CHAT_HISTORY:
-                    getChatHistory(0);
-                    break;
-                case LOG_OUT:
-                    mainChatList.clear();
-                    currentMessages.clear();
-                    haveFullMainChatList = false;
-                    client.send(new TdApi.LogOut(), defaultHandler);
-                    break;
-                case QUIT:
-                    needQuit = true;
-                    client.send(new TdApi.Close(), defaultHandler);
-                    break;
-                default:
-                    System.err.println("Unsupported command");
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Log.e(TAG, "Not enough arguments");
-        }
+    public static void executeLogOut() {
+        mainChatList.clear();
+        currentMessages.clear();
+        haveFullMainChatList = false;
+        client.send(new TdApi.LogOut(), defaultHandler);
+    }
+
+    public static void executeQuit() {
+        needQuit = true;
+        client.send(new TdApi.Close(), defaultHandler);
     }
 
     public static void main(String dbDir, String logFileName, int apiId,
@@ -265,7 +243,7 @@ public final class Example {
     private static void getChatHistory(long fromMessageId) {
         client.send(
                 new TdApi.GetChatHistory(
-                        mChatId, fromMessageId, 0, 20, false
+                        currentChatId, fromMessageId, 0, 20, false
                 ),
                 messagesHandler
         );
@@ -358,6 +336,22 @@ public final class Example {
         }
     }
 
+    private static class UserHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.User.CONSTRUCTOR: {
+                    TdApi.User user = (TdApi.User) object;
+                    users.put(user.id, user);
+                    chatManager.addUser(user);
+                    break;
+                }
+                default:
+                    Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+            }
+        }
+    }
+
     private static class MessagesHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
@@ -367,8 +361,17 @@ public final class Example {
                     TdApi.Messages messagesObject = (TdApi.Messages) object;
                     int size = messagesObject.messages.length;
                     for (int i = 0; i < size; i++) {
-                        currentMessages.add(messagesObject.messages[i]);
+                        TdApi.Message message = messagesObject.messages[i];
+                        currentMessages.add(message);
                         chatManager.addMessage(currentMessages.get(i));
+
+                        TdApi.MessageSenderUser sender
+                                = ((TdApi.MessageSenderUser) message.senderId);
+                        if (sender != null) {
+                            if (!users.containsKey(sender.userId)) {
+                                client.send(new TdApi.GetUser(sender.userId), new UserHandler());
+                            }
+                        }
                     }
                     if (currentMessages.size() < 20 && size > 0) {
                         long lastMessageId = currentMessages.get(currentMessages.size() - 1).id;
@@ -377,7 +380,7 @@ public final class Example {
                     break;
                 }
                 default:
-                    Log.e(TAG, "Receive wrong response from TDLib:" + newLine + object);
+                    Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
             }
         }
     }
@@ -393,7 +396,7 @@ public final class Example {
                 case TdApi.UpdateFile.CONSTRUCTOR:
                     break;
                 default:
-                    Log.e(TAG, "Receive wrong response from TDLib:" + newLine + object);
+                    Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
             }
         }
     }
@@ -425,7 +428,7 @@ public final class Example {
                     break;
                 default:
                     Log.e(TAG,
-                          "Receive wrong response from TDLib:" + newLine + object
+                          "Received wrong response from TDLib:" + newLine + object
                     );
             }
         }
@@ -522,7 +525,7 @@ public final class Example {
                     // result is already received through UpdateAuthorizationState, nothing to do
                     break;
                 default:
-                    System.err.println("Receive wrong response from TDLib:" + newLine + object);
+                    System.err.println("Received wrong response from TDLib:" + newLine + object);
             }
         }
     }

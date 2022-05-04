@@ -24,7 +24,7 @@ public class ChatsActivity extends AppCompatActivity {
         Example.setOnStateChange(this::onStateChange);
 
         binding.buttonLogout.setOnClickListener(View -> {
-            Example.executeCommand(Example.Command.LOG_OUT);
+            Example.executeLogOut();
         });
 
         binding.buttonBack.setOnClickListener(View -> {
@@ -44,8 +44,7 @@ public class ChatsActivity extends AppCompatActivity {
 
     public void openMessages(TdApi.Chat chat) {
         binding.buttonBack.setVisibility(View.VISIBLE);
-        Example.setCommandArgs(0, chat.id, null);
-        Example.executeCommand(Example.Command.GET_CHAT_HISTORY);
+        Example.executeGetChatHistory(chat.id);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();

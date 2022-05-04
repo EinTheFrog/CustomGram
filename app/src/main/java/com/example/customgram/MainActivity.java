@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openChatsActivity() {
-        Example.executeCommand(Example.Command.GET_CHATS);
+        Example.executeGetChats(20);
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);
     }

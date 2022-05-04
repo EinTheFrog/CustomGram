@@ -17,12 +17,14 @@ public class ChatManager {
 
     private final List<TdApi.Chat> chats = new LinkedList<>();
     private final List<TdApi.Message> messages = new ArrayList<>();
+    private final Map<Long, TdApi.User> users = new HashMap<>();
     private static ChatManager instance;
     private BiConsumer<TdApi.Chat, Integer> onNewChat;
     private Consumer<TdApi.Chat> onRemoveChat;
     private Consumer<TdApi.Chat> onChatPhotoChange;
     private Consumer<TdApi.Chat> onChatLastMessageChange;
     private Consumer<TdApi.Message> onNewMessage;
+    private Consumer<TdApi.User> onNewUser;
 
     private ChatManager() {
     }
@@ -75,6 +77,13 @@ public class ChatManager {
         }
     }
 
+    public void addUser(TdApi.User user) {
+        users.put(user.id, user);
+        if (onNewUser != null) {
+            onNewUser.accept(user);
+        }
+    }
+
     public void setOnNewChat(BiConsumer<TdApi.Chat, Integer> fun) {
         onNewChat = fun;
     }
@@ -109,5 +118,17 @@ public class ChatManager {
 
     public void clearMessages() {
         messages.clear();
+    }
+
+    public void setOnNewUser(Consumer<TdApi.User> fun) {
+        onNewUser = fun;
+    }
+
+    public Map<Long, TdApi.User> getUsers() {
+        return new HashMap<>(users);
+    }
+
+    public void clearUsers() {
+        users.clear();
     }
 }
