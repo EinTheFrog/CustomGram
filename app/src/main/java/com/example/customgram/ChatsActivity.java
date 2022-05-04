@@ -1,6 +1,7 @@
 package com.example.customgram;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -34,6 +35,7 @@ public class ChatsActivity extends AppCompatActivity {
     }
 
     private void openChats() {
+        binding.buttonBack.setVisibility(View.INVISIBLE);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, ChatListFragment.class, null);
@@ -41,6 +43,7 @@ public class ChatsActivity extends AppCompatActivity {
     }
 
     public void openMessages(TdApi.Chat chat) {
+        binding.buttonBack.setVisibility(View.VISIBLE);
         Example.setCommandArgs(0, chat.id, null);
         Example.executeCommand(Example.Command.GET_CHAT_HISTORY);
 

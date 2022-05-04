@@ -18,14 +18,17 @@ import com.example.customgram.databinding.ChatListFragmentBinding;
 
 import org.drinkless.td.libcore.telegram.TdApi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatListFragment extends Fragment {
     private static final String TAG = "CHAT_LIST_FRAGMENT";
 
     private final ChatManager chatManager = ChatManager.getInstance();
-    private final List<TdApi.Chat> chats = chatManager.getChats();
-    private final ChatRecyclerViewAdapter mChatRecyclerAdapter  = new ChatRecyclerViewAdapter(chats);
+    private List<TdApi.Chat> chats;
+    private Map<Integer, TdApi.Chat> chatsBuffer;
+    private ChatRecyclerViewAdapter mChatRecyclerAdapter;
     private AppCompatActivity activity;
 
     public ChatListFragment() {
@@ -44,6 +47,14 @@ public class ChatListFragment extends Fragment {
             ViewGroup container,
             Bundle savedInstanceState
     ) {
+        chats = chatManager.getChats();
+        Log.d(TAG, "Copied chats. Chats size: " + chats.size());
+        chatsBuffer = new HashMap<>();
+        for (int i = 0; i < chats.size(); i++) {
+            chatsBuffer.put(i, chats.get(i));
+        }
+        mChatRecyclerAdapter  = new ChatRecyclerViewAdapter(chats);
+
         ChatListFragmentBinding binding = ChatListFragmentBinding.inflate(
                 inflater,
                 container,
@@ -62,49 +73,34 @@ public class ChatListFragment extends Fragment {
     }
 
     private void updateNewChat(TdApi.Chat chat, int pos) {
-        synchronized (chats) {
-            if (chats.contains(chat)) return;
-            Log.d(TAG, "Adding chat: Chats size: " + chats.size());
-            activity.runOnUiThread(() -> {
-                chats.add(pos, chat);
-                mChatRecyclerAdapter.notifyItemInserted(pos);
-            });
-        }
+        chatsBuffer.put(pos, chat);
+        activity.runOnUiThread(() -> {
+            int key = chats.size();
+            chats.add(chatsBuffer.get(key));
+            mChatRecyclerAdapter.notifyItemInserted(pos);
+        });
     }
 
     private void updateRemoveChat(TdApi.Chat chat) {
-        synchronized (chats) {
-            if (!chats.contains(chat)) return;
-            Log.d(TAG, "Removing chat: Chats size: " + chats.size());
-            activity.runOnUiThread(() -> {
-                int pos = chats.indexOf(chat);
-                chats.remove(chat);
-                mChatRecyclerAdapter.notifyItemRemoved(pos);
-                mChatRecyclerAdapter.notifyItemRangeChanged(pos, chats.size());
-            });
-        }
+        activity.runOnUiThread(() -> {
+            int pos = chats.indexOf(chat);
+            mChatRecyclerAdapter.notifyItemRemoved(pos);
+            mChatRecyclerAdapter.notifyItemRangeChanged(pos, chats.size());
+        });
     }
 
     private void updateChatPhoto(TdApi.Chat chat) {
-        synchronized (chats) {
-            if (!chats.contains(chat)) return;
-            activity.runOnUiThread(() -> {
-                synchronized (chats) {
-                    int pos = chats.indexOf(chat);
-                    mChatRecyclerAdapter.notifyItemChanged(pos);
-                }
-            });
-        }
+        activity.runOnUiThread(() -> {
+            int pos = chats.indexOf(chat);
+            mChatRecyclerAdapter.notifyItemChanged(pos);
+        });
     }
 
     private void updateChatLastMessage(TdApi.Chat chat) {
-        synchronized (chats) {
-            if (!chats.contains(chat)) return;
-            activity.runOnUiThread(() -> {
-                int pos = chats.indexOf(chat);
-                mChatRecyclerAdapter.notifyItemChanged(pos);
-            });
-        }
+        activity.runOnUiThread(() -> {
+            int pos = chats.indexOf(chat);
+            mChatRecyclerAdapter.notifyItemChanged(pos);
+        });
     }
 
     private void openMessages(int pos) {

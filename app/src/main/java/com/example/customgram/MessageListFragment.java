@@ -20,9 +20,9 @@ import java.util.List;
 public class MessageListFragment extends Fragment {
     private static final String TAG = "MESSAGE_LIST_FRAGMENT";
 
-    private ChatManager chatManager = ChatManager.getInstance();
-    private List<TdApi.Message> messages = chatManager.getMessages();
-    private MessageRecyclerViewAdapter mMessageRecyclerAdapter = new MessageRecyclerViewAdapter(messages);
+    private final ChatManager chatManager = ChatManager.getInstance();
+    private List<TdApi.Message> messages;
+    private MessageRecyclerViewAdapter mMessageRecyclerAdapter;
     private AppCompatActivity activity;
 
     public MessageListFragment() {}
@@ -39,6 +39,11 @@ public class MessageListFragment extends Fragment {
             ViewGroup container,
             Bundle savedInstanceState
     ) {
+        messages = chatManager.getMessages();
+        Log.d(TAG, "Copied messages. Messages size: " + messages.size());
+        mMessageRecyclerAdapter = new MessageRecyclerViewAdapter(messages);
+        chatManager.setOnNewMessage(this::updateNewMessage);
+
         ChatListFragmentBinding binding = ChatListFragmentBinding.inflate(
                 inflater,
                 container,
@@ -49,7 +54,7 @@ public class MessageListFragment extends Fragment {
         llm.setReverseLayout(true);
         binding.recyclerChats.setLayoutManager(llm);
         binding.recyclerChats.setAdapter(mMessageRecyclerAdapter);
-        chatManager.setOnNewMessage(this::updateNewMessage);
+
         return binding.getRoot();
     }
 
@@ -63,9 +68,9 @@ public class MessageListFragment extends Fragment {
 
     private void updateNewMessage(TdApi.Message message) {
         Log.d(TAG, "Attempt to add new message");
-        if (messages.contains(message)) return;
-        Log.d(TAG, "Adding new message");
         activity.runOnUiThread(() -> {
+            if (messages.contains(message)) return;
+            Log.d(TAG, "Adding new message");
             messages.add(message);
             mMessageRecyclerAdapter.notifyItemInserted(messages.size() - 1);
         });

@@ -68,6 +68,7 @@ public class ChatManager {
     }
 
     public void addMessage(TdApi.Message message) {
+        Log.d(TAG, "Adding message");
         messages.add(message);
         if (onNewMessage != null) {
             onNewMessage.accept(message);

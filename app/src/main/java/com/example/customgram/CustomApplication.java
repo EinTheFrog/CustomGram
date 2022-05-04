@@ -9,10 +9,4 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class CustomApplication extends Application {
     public ExecutorService executor = Executors.newFixedThreadPool(1);
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.i("CustomApplication", "Application created");
-    }
 }
