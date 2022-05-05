@@ -40,6 +40,7 @@ public class ChatRecyclerViewAdapter extends
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         TdApi.Chat chat = mChats.get(position);
+        if (chat == null) return;
         holder.chatTitle.setText(chat.title);
 
         holder.parentView.findViewById(R.id.chat_button).setOnClickListener(v -> {
