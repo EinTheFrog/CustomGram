@@ -21,6 +21,9 @@ public class ChatsActivity extends AppCompatActivity {
 
         binding = ActivityChatsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        setSupportActionBar(binding.myToolbar);
+
         Example.setOnStateChange(this::onStateChange);
 
         binding.buttonLogout.setOnClickListener(View -> {
@@ -36,20 +39,23 @@ public class ChatsActivity extends AppCompatActivity {
 
     private void openChats() {
         binding.buttonBack.setVisibility(View.INVISIBLE);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, ChatListFragment.class, null);
+        transaction.replace(R.id.toolbar_fragment_container, ToolbarDefaultFragment.class, null);
         transaction.commit();
     }
 
     public void openMessages(TdApi.Chat chat) {
         binding.buttonBack.setVisibility(View.VISIBLE);
         Example.executeGetChatHistory(chat.id);
-        ChatManager.getInstance().setCurrentChatName(chat.title);
+        ChatManager.getInstance().setCurrentChat(chat);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, MessageListFragment.class, null);
+        transaction.replace(R.id.toolbar_fragment_container, ToolbarChatInfoFragment.class, null);
         transaction.commit();
     }
 

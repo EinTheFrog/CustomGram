@@ -69,27 +69,7 @@ public class ChatRecyclerViewAdapter extends
             holder.chatPhoto.setBackgroundColor(
                     ContextCompat.getColor(photoContext, R.color.blue)
             );
-
-            String altPhotoText;
-            String[] words = chat.title.split(" ");
-            switch (words.length) {
-                case 0: {
-                    altPhotoText = "";
-                    break;
-                }
-                case 1: {
-                    String firstWord = words[0];
-                    altPhotoText = Character.toString(firstWord.charAt(0));
-                    break;
-                }
-                default: {
-                    String firstWord = words[0];
-                    String lastWord = words[words.length - 1];
-                    altPhotoText = Character.toString(firstWord.charAt(0)) + lastWord.charAt(0);
-                }
-            }
-            altPhotoText = altPhotoText.toUpperCase();
-            holder.altChatPhotoText.setText(altPhotoText);
+            holder.altChatPhotoText.setText(ChatAltPhotoHelper.getChatInitials(chat));
         }
     }
 
