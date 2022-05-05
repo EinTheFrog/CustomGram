@@ -19,11 +19,13 @@ public class MessageRecyclerViewAdapter
     private static final String TAG = "MESSAGE_RECYCLER_VIEW_ADAPTER";
 
     private final List<TdApi.Message> mMessages;
+    private final String mChatName;
 
     private Function<Long, String> getMessageSenderName;
 
-    public MessageRecyclerViewAdapter(List<TdApi.Message> messages) {
+    public MessageRecyclerViewAdapter(List<TdApi.Message> messages, String chatName) {
         mMessages = messages;
+        mChatName = chatName;
     }
 
     @Override
@@ -44,9 +46,12 @@ public class MessageRecyclerViewAdapter
         }
 
         if (getMessageSenderName == null) return;
-        TdApi.MessageSenderUser sender = (TdApi.MessageSenderUser) message.senderId;
-        if (sender != null) {
+
+        if (message.senderId.getConstructor() == TdApi.MessageSenderUser.CONSTRUCTOR) {
+            TdApi.MessageSenderUser sender = (TdApi.MessageSenderUser) message.senderId;
             holder.messageFrom.setText(getMessageSenderName.apply(sender.userId));
+        } else if (message.senderId.getConstructor() == TdApi.MessageSenderChat.CONSTRUCTOR) {
+            holder.messageFrom.setText(mChatName);
         }
     }
 

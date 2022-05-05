@@ -47,7 +47,8 @@ public class MessageListFragment extends Fragment {
         messages = chatManager.getMessages();
         users = chatManager.getUsers();
         Log.d(TAG, "Copied messages. Messages size: " + messages.size());
-        mMessageRecyclerAdapter = new MessageRecyclerViewAdapter(messages);
+        String chatName = chatManager.getCurrentChatName();
+        mMessageRecyclerAdapter = new MessageRecyclerViewAdapter(messages, chatName);
         chatManager.setOnNewMessage(this::updateNewMessage);
         chatManager.setOnNewUser(this::updateNewUser);
         mMessageRecyclerAdapter.setMessageNameCallback(this::getMessageSenderName);

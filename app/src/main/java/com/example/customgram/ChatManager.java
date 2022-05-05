@@ -25,6 +25,7 @@ public class ChatManager {
     private Consumer<TdApi.Chat> onChatLastMessageChange;
     private Consumer<TdApi.Message> onNewMessage;
     private Consumer<TdApi.User> onNewUser;
+    private String currentChatName;
 
     private ChatManager() {
     }
@@ -130,5 +131,13 @@ public class ChatManager {
 
     public void clearUsers() {
         users.clear();
+    }
+
+    public void setCurrentChatName(String chatName) {
+        currentChatName = chatName;
+    }
+
+    public String getCurrentChatName() {
+        return currentChatName;
     }
 }

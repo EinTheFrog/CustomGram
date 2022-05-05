@@ -45,6 +45,7 @@ public class ChatsActivity extends AppCompatActivity {
     public void openMessages(TdApi.Chat chat) {
         binding.buttonBack.setVisibility(View.VISIBLE);
         Example.executeGetChatHistory(chat.id);
+        ChatManager.getInstance().setCurrentChatName(chat.title);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();

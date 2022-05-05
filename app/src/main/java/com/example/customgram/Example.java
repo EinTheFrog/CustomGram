@@ -365,12 +365,16 @@ public final class Example {
                         currentMessages.add(message);
                         chatManager.addMessage(currentMessages.get(i));
 
-                        TdApi.MessageSenderUser sender
-                                = ((TdApi.MessageSenderUser) message.senderId);
-                        if (sender != null) {
+                        if (message.senderId.getConstructor() == TdApi.MessageSenderUser.CONSTRUCTOR) {
+                            TdApi.MessageSenderUser sender
+                                    = ((TdApi.MessageSenderUser) message.senderId);
                             if (!users.containsKey(sender.userId)) {
                                 client.send(new TdApi.GetUser(sender.userId), new UserHandler());
                             }
+                        } else {
+                            Log.d(TAG, "Received message not from user. Sender type: "
+                                            + message.senderId.getConstructor()
+                            );
                         }
                     }
                     if (currentMessages.size() < 20 && size > 0) {
