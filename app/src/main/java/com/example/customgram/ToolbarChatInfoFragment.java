@@ -36,7 +36,12 @@ public class ToolbarChatInfoFragment extends Fragment {
         ChatManager chatManager = ChatManager.getInstance();
         TdApi.Chat chat = chatManager.getCurrentChat();
         binding.toolbarChatTitle.setText(chat.title);
+        setTitle(chat, binding);
 
+        return binding.getRoot();
+    }
+
+    private void setTitle(TdApi.Chat chat, ToolbarChatInfoFragmentBinding binding) {
         if (chat.photo != null && !chat.photo.small.local.path.equals("")) {
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(chat.photo.small.local.path, bmOptions);
@@ -50,8 +55,5 @@ public class ToolbarChatInfoFragment extends Fragment {
             );
             binding.toolbarAltChatImg.setText(ChatAltPhotoHelper.getChatInitials(chat));
         }
-
-
-        return binding.getRoot();
     }
 }

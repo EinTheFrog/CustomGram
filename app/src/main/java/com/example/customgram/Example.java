@@ -35,8 +35,10 @@ public final class Example {
 
     private static ChatManager chatManager;
     private static Consumer<TdApi.AuthorizationState> onStateChange;
+
     private static final FileHandler fileHandler = new FileHandler();
     private static final MessagesHandler messagesHandler = new MessagesHandler();
+    private static final MessageHandler messageHandler = new MessageHandler();
 
     private static volatile boolean havePhoneNumber = false;
     private static final Lock phoneNumberLock = new ReentrantLock();
@@ -201,6 +203,23 @@ public final class Example {
         getChatHistory(0);
     }
 
+    public static void executeSendMessage(String text) {
+        TdApi.FormattedText formattedText = new TdApi.FormattedText(text, null);
+        TdApi.InputMessageText messageText = new TdApi.InputMessageText(
+                formattedText, false, true
+        );
+        client.send(
+                new TdApi.SendMessage(
+                        currentChatId,
+                        0,
+                        0,
+                        null,
+                        null,
+                        messageText),
+                messageHandler
+        );
+    }
+
     public static void executeLogOut() {
         mainChatList.clear();
         currentMessages.clear();
@@ -306,8 +325,7 @@ public final class Example {
         boolean chatHasPhoto = chat.photo != null;
         if (!chatHasPhoto) return;
         photoRemoteIdsToChatIds.put(chat.photo.small.remote.id, chat.id);
-        boolean needToLoadChatPhoto = chat.photo.small.local.path.equals("");
-        if (needToLoadChatPhoto) {
+        if (!chat.photo.small.local.isDownloadingCompleted) {
             getFileInfo(chat.photo.small.remote.id);
         }
     }
@@ -325,7 +343,7 @@ public final class Example {
     private static void downloadFile(int id) {
         client.send(
                 new TdApi.DownloadFile(id, 31, 0, 0, true),
-                fileHandler
+                defaultHandler
         );
     }
 
@@ -352,12 +370,30 @@ public final class Example {
         }
     }
 
+    private static class MessageHandler implements Client.ResultHandler {
+
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.Message.CONSTRUCTOR: {
+                    TdApi.Message message = (TdApi.Message) object;
+                    synchronized (currentMessages) {
+                        currentMessages.add(message);
+                        chatManager.addMessage(message);
+                    }
+                    break;
+                }
+                default:
+                    Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+            }
+        }
+    }
+
     private static class MessagesHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
                 case TdApi.Messages.CONSTRUCTOR: {
-                    Log.d(TAG, "Getting messages");
                     TdApi.Messages messagesObject = (TdApi.Messages) object;
                     int size = messagesObject.messages.length;
                     for (int i = 0; i < size; i++) {
@@ -371,10 +407,6 @@ public final class Example {
                             if (!users.containsKey(sender.userId)) {
                                 client.send(new TdApi.GetUser(sender.userId), new UserHandler());
                             }
-                        } else {
-                            Log.d(TAG, "Received message not from user. Sender type: "
-                                            + message.senderId.getConstructor()
-                            );
                         }
                     }
                     if (currentMessages.size() < 20 && size > 0) {
@@ -396,8 +428,6 @@ public final class Example {
                 case TdApi.File.CONSTRUCTOR:
                     TdApi.File file = (TdApi.File) object;
                     downloadFile(file.id);
-                    break;
-                case TdApi.UpdateFile.CONSTRUCTOR:
                     break;
                 default:
                     Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
@@ -499,18 +529,21 @@ public final class Example {
                     }
                     break;
                 }
-                case TdApi.UpdateFile.CONSTRUCTOR:
-                    Log.d(TAG, "Got UpdateFile");
+                case TdApi.UpdateFile.CONSTRUCTOR: {
                     TdApi.UpdateFile photo = (TdApi.UpdateFile) object;
-                    Long chatId = photoRemoteIdsToChatIds.get(photo.file.remote.id);
-                    if (chatId == null) {
+                    if (photo.file.local.isDownloadingActive) break;
+                    if (!photo.file.local.isDownloadingCompleted
+                            && photo.file.local.canBeDownloaded) {
+                        getFileInfo(photo.file.remote.id);
                         break;
                     }
-                    Log.d(TAG, "Path: " + photo.file.local.path);
+                    if (!photoRemoteIdsToChatIds.containsKey(photo.file.remote.id)) break;
+                    Long chatId = photoRemoteIdsToChatIds.get(photo.file.remote.id);
                     TdApi.Chat chatWithPhoto = chats.get(chatId);
                     chatWithPhoto.photo.small.local.path = photo.file.local.path;
                     chatManager.addChatPhoto(chatWithPhoto);
                     break;
+                }
                 default:
                     Log.e(TAG,"Unsupported update:" + newLine + object);
             }

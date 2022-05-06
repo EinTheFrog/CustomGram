@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.customgram.databinding.ChatListFragmentBinding;
+import com.example.customgram.databinding.MessageListFragmentBinding;
 
 import org.drinkless.td.libcore.telegram.TdApi;
 
@@ -53,7 +54,7 @@ public class MessageListFragment extends Fragment {
         chatManager.setOnNewUser(this::updateNewUser);
         mMessageRecyclerAdapter.setMessageNameCallback(this::getMessageSenderName);
 
-        ChatListFragmentBinding binding = ChatListFragmentBinding.inflate(
+        MessageListFragmentBinding binding = MessageListFragmentBinding.inflate(
                 inflater,
                 container,
                 false
@@ -61,8 +62,11 @@ public class MessageListFragment extends Fragment {
         Context context = binding.getRoot().getContext();
         LinearLayoutManager llm = new LinearLayoutManager(context);
         llm.setReverseLayout(true);
-        binding.recyclerChats.setLayoutManager(llm);
-        binding.recyclerChats.setAdapter(mMessageRecyclerAdapter);
+        binding.recyclerMessages.setLayoutManager(llm);
+        binding.recyclerMessages.setAdapter(mMessageRecyclerAdapter);
+        binding.sendMessageButton.setOnClickListener(view -> {
+            Example.executeSendMessage(binding.newMessageText.getText().toString());
+        });
 
         return binding.getRoot();
     }

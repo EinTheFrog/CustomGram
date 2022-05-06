@@ -63,6 +63,7 @@ public class ChatListFragment extends Fragment {
         Context context = binding.getRoot().getContext();
         binding.recyclerChats.setLayoutManager(new LinearLayoutManager(context));
         binding.recyclerChats.setAdapter(mChatRecyclerAdapter);
+
         chatManager.setOnNewChat(this::updateNewChat);
         chatManager.setOnRemoveChat(this::updateRemoveChat);
         chatManager.setOnChatPhotoChange(this::updateChatPhoto);
