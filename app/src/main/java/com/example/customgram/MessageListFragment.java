@@ -30,6 +30,7 @@ public class MessageListFragment extends Fragment {
     private final Map<Long, List<TdApi.Message>> messagesWithoutTitle = new HashMap<>();
     private MessageRecyclerViewAdapter mMessageRecyclerAdapter;
     private AppCompatActivity activity;
+    private MessageListFragmentBinding binding;
 
     public MessageListFragment() {}
 
@@ -52,9 +53,10 @@ public class MessageListFragment extends Fragment {
         mMessageRecyclerAdapter = new MessageRecyclerViewAdapter(messages, chatName);
         chatManager.setOnNewMessage(this::updateNewMessage);
         chatManager.setOnNewUser(this::updateNewUser);
+        chatManager.setOnNewMessages(this::updateNewMessages);
         mMessageRecyclerAdapter.setMessageNameCallback(this::getMessageSenderName);
 
-        MessageListFragmentBinding binding = MessageListFragmentBinding.inflate(
+        binding = MessageListFragmentBinding.inflate(
                 inflater,
                 container,
                 false
@@ -94,9 +96,16 @@ public class MessageListFragment extends Fragment {
         activity.runOnUiThread(() -> {
             if (messages.contains(message)) return;
             Log.d(TAG, "Adding new message");
-            messages.add(message);
-            mMessageRecyclerAdapter.notifyItemInserted(messages.size() - 1);
+            messages.add(0, message);
+            mMessageRecyclerAdapter.notifyItemInserted(0);
+            binding.recyclerMessages.scrollToPosition(0);
         });
+    }
+
+    private void updateNewMessages(TdApi.Message[] newMessages) {
+        for (int i = newMessages.length - 1; i >= 0; i--) {
+            updateNewMessage(newMessages[i]);
+        }
     }
 
     private void updateNewUser(TdApi.User user) {

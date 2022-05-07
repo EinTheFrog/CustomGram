@@ -378,7 +378,7 @@ public final class Example {
                 case TdApi.Message.CONSTRUCTOR: {
                     TdApi.Message message = (TdApi.Message) object;
                     synchronized (currentMessages) {
-                        currentMessages.add(message);
+                        currentMessages.add(0, message);
                         chatManager.addMessage(message);
                     }
                     break;
@@ -399,7 +399,6 @@ public final class Example {
                     for (int i = 0; i < size; i++) {
                         TdApi.Message message = messagesObject.messages[i];
                         currentMessages.add(message);
-                        chatManager.addMessage(currentMessages.get(i));
 
                         if (message.senderId.getConstructor() == TdApi.MessageSenderUser.CONSTRUCTOR) {
                             TdApi.MessageSenderUser sender
@@ -412,6 +411,10 @@ public final class Example {
                     if (currentMessages.size() < 20 && size > 0) {
                         long lastMessageId = currentMessages.get(currentMessages.size() - 1).id;
                         getChatHistory(lastMessageId);
+                    } else {
+                        TdApi.Message[] messages = new TdApi.Message[currentMessages.size()];
+                        currentMessages.toArray(messages);
+                        chatManager.addMessages(messages);
                     }
                     break;
                 }

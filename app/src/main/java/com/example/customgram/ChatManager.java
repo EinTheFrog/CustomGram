@@ -24,6 +24,7 @@ public class ChatManager {
     private Consumer<TdApi.Chat> onChatPhotoChange;
     private Consumer<TdApi.Chat> onChatLastMessageChange;
     private Consumer<TdApi.Message> onNewMessage;
+    private Consumer<TdApi.Message[]> onNewMessages;
     private Consumer<TdApi.User> onNewUser;
     private TdApi.Chat currentChat;
 
@@ -71,10 +72,18 @@ public class ChatManager {
     }
 
     public void addMessage(TdApi.Message message) {
-        Log.d(TAG, "Adding message");
-        messages.add(message);
+        messages.add(0, message);
         if (onNewMessage != null) {
             onNewMessage.accept(message);
+        }
+    }
+
+    public void addMessages(TdApi.Message[] newMessages) {
+        for (int i = newMessages.length - 1; i >= 0; i--) {
+            messages.add(0, newMessages[i]);
+        }
+        if (onNewMessages != null) {
+            onNewMessages.accept(newMessages);
         }
     }
 
@@ -111,6 +120,10 @@ public class ChatManager {
 
     public void setOnNewMessage(Consumer<TdApi.Message> fun) {
         onNewMessage = fun;
+    }
+
+    public void setOnNewMessages(Consumer<TdApi.Message[]> fun) {
+        onNewMessages = fun;
     }
 
     public List<TdApi.Message> getMessages() {
