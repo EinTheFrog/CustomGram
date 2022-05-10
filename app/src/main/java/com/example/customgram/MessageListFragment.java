@@ -54,6 +54,7 @@ public class MessageListFragment extends Fragment {
         chatManager.setOnNewMessage(this::updateNewMessage);
         chatManager.setOnNewUser(this::updateNewUser);
         chatManager.setOnNewMessages(this::updateNewMessages);
+        chatManager.setOnMessageUpdate(this::updateOldMessage);
         mMessageRecyclerAdapter.setMessageNameCallback(this::getMessageSenderName);
 
         binding = MessageListFragmentBinding.inflate(
@@ -106,6 +107,13 @@ public class MessageListFragment extends Fragment {
         for (int i = newMessages.length - 1; i >= 0; i--) {
             updateNewMessage(newMessages[i]);
         }
+    }
+
+    private void updateOldMessage(TdApi.Message message) {
+        activity.runOnUiThread(() -> {
+            int pos = messages.indexOf(message);
+            mMessageRecyclerAdapter.notifyItemChanged(pos);
+        });
     }
 
     private void updateNewUser(TdApi.User user) {

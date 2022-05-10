@@ -9,6 +9,7 @@
         android:layout_height="0dp"
         android:background="@color/blue"
         app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
+        app:strokeColor="@null"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

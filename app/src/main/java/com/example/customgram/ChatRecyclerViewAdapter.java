@@ -57,7 +57,7 @@ public class ChatRecyclerViewAdapter extends
         }
         holder.lastMsg.setText(text);
 
-        if (chat.photo != null && chat.photo.small.local.isDownloadingCompleted) {
+        if (chat.photo != null && !chat.photo.small.local.path.equals("")) {
             Log.d(TAG, "Adding photo to chat with name: " + chat.title);
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(chat.photo.small.local.path, bmOptions);

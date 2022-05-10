@@ -1,9 +1,12 @@
 package com.example.customgram;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,6 +56,18 @@ public class MessageRecyclerViewAdapter
         } else if (message.senderId.getConstructor() == TdApi.MessageSenderChat.CONSTRUCTOR) {
             holder.messageFrom.setText(mChatName);
         }
+
+        holder.messagePhoto.setImageDrawable(null);
+        if (message.content.getConstructor() == TdApi.MessagePhoto.CONSTRUCTOR) {
+            TdApi.MessagePhoto content = (TdApi.MessagePhoto) message.content;
+            int size = content.photo.sizes.length - 1;
+            String path = content.photo.sizes[size].photo.local.path;
+            if (!path.equals("")) {
+                BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                Bitmap bitmap = BitmapFactory.decodeFile(path, bmOptions);
+                holder.messagePhoto.setImageBitmap(bitmap);
+            }
+        }
     }
 
     public void setMessageNameCallback(Function<Long, String> fun) {
@@ -67,12 +82,14 @@ public class MessageRecyclerViewAdapter
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView messageFrom;
         public final TextView messageText;
+        public final ImageView messagePhoto;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             messageFrom = itemView.findViewById(R.id.message_from);
             messageText = itemView.findViewById(R.id.message_text);
+            messagePhoto = itemView.findViewById(R.id.message_photo);
         }
     }
 }

@@ -25,6 +25,7 @@ public class ChatManager {
     private Consumer<TdApi.Chat> onChatLastMessageChange;
     private Consumer<TdApi.Message> onNewMessage;
     private Consumer<TdApi.Message[]> onNewMessages;
+    private Consumer<TdApi.Message> onMessageUpdate;
     private Consumer<TdApi.User> onNewUser;
     private TdApi.Chat currentChat;
 
@@ -87,6 +88,12 @@ public class ChatManager {
         }
     }
 
+    public void updateMessage(TdApi.Message message) {
+        if (onMessageUpdate != null) {
+            onMessageUpdate.accept(message);
+        }
+    }
+
     public void addUser(TdApi.User user) {
         users.put(user.id, user);
         if (onNewUser != null) {
@@ -124,6 +131,10 @@ public class ChatManager {
 
     public void setOnNewMessages(Consumer<TdApi.Message[]> fun) {
         onNewMessages = fun;
+    }
+
+    public void setOnMessageUpdate(Consumer<TdApi.Message> fun) {
+        onMessageUpdate = fun;
     }
 
     public List<TdApi.Message> getMessages() {

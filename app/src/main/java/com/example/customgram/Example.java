@@ -36,9 +36,11 @@ public final class Example {
     private static ChatManager chatManager;
     private static Consumer<TdApi.AuthorizationState> onStateChange;
 
-    private static final FileHandler fileHandler = new FileHandler();
-    private static final MessagesHandler messagesHandler = new MessagesHandler();
-    private static final MessageHandler messageHandler = new MessageHandler();
+    private static final ProfilePhotoHandler profilePhotoHandler = new ProfilePhotoHandler();
+    private static final ChatHistoryHandler chatHistoryHandler = new ChatHistoryHandler();
+    private static final SentMessageHandler sentMessageHandler = new SentMessageHandler();
+    private static final Client.ResultHandler defaultHandler = new DefaultHandler();
+    private static final MessagePhotoHandler messagePhotoHandler = new MessagePhotoHandler();
 
     private static volatile boolean havePhoneNumber = false;
     private static final Lock phoneNumberLock = new ReentrantLock();
@@ -48,21 +50,20 @@ public final class Example {
 
     private static Client client = null;
     private static String databaseDirectory = "tdlib";
-    private final static String PHONE_PREFIX = "999662";
+    private static final String PHONE_PREFIX = "999662";
     private static String phoneNumber = PHONE_PREFIX + "1111";
 
     public static TdApi.AuthorizationState authorizationState = null;
     private static volatile boolean needQuit = false;
 
-    private static final Client.ResultHandler defaultHandler = new DefaultHandler();
-
     private static final ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, Long> photoRemoteIdsToChatIds = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Long> photoIdsToChatIds = new ConcurrentHashMap<>();
 
-    private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<OrderedChat>();
+    private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<>();
     private static boolean haveFullMainChatList = false;
 
     private static final List<TdApi.Message> currentMessages = new ArrayList<>();
+    private static final ConcurrentHashMap<Integer, TdApi.Message> photoIdsToMessages = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<Long, TdApi.User> users = new ConcurrentHashMap<>();
 
@@ -216,7 +217,7 @@ public final class Example {
                         null,
                         null,
                         messageText),
-                messageHandler
+                sentMessageHandler
         );
     }
 
@@ -241,9 +242,15 @@ public final class Example {
         Example.systemLanguageCode = systemLanguageCode;
         Example.authenticationCode = authenticationCode;
 
-        Client.execute(new TdApi.SetLogVerbosityLevel(4));
+        Client.execute(new TdApi.SetLogVerbosityLevel(2));
 
-        TdApi.Object result = Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile(dbDir + logFileName, 1 << 27, true)));
+        TdApi.Object result = Client.execute(new TdApi.SetLogStream(
+                new TdApi.LogStreamFile(
+                        dbDir + logFileName,
+                        1 << 27,
+                        true
+                )
+        ));
         if (result instanceof TdApi.Error) {
             throw new IOError(new IOException("Write access to the current directory is required"));
         }
@@ -264,7 +271,7 @@ public final class Example {
                 new TdApi.GetChatHistory(
                         currentChatId, fromMessageId, 0, 20, false
                 ),
-                messagesHandler
+                chatHistoryHandler
         );
     }
 
@@ -324,26 +331,16 @@ public final class Example {
 
         boolean chatHasPhoto = chat.photo != null;
         if (!chatHasPhoto) return;
-        photoRemoteIdsToChatIds.put(chat.photo.small.remote.id, chat.id);
-        if (!chat.photo.small.local.isDownloadingCompleted) {
-            getFileInfo(chat.photo.small.remote.id);
+        photoIdsToChatIds.put(chat.photo.small.id, chat.id);
+        if (chat.photo.small.local.path.equals("")) {
+            downloadFile(chat.photo.small.id, profilePhotoHandler);
         }
     }
 
-    private static void getFileInfo(String id) {
-        client.send(
-                new TdApi.GetRemoteFile(
-                        id,
-                        new TdApi.FileTypeProfilePhoto()
-                ),
-                fileHandler
-        );
-    }
-
-    private static void downloadFile(int id) {
+    private static void downloadFile(int id, Client.ResultHandler handler) {
         client.send(
                 new TdApi.DownloadFile(id, 31, 0, 0, true),
-                defaultHandler
+                handler
         );
     }
 
@@ -370,8 +367,7 @@ public final class Example {
         }
     }
 
-    private static class MessageHandler implements Client.ResultHandler {
-
+    private static class SentMessageHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
@@ -389,7 +385,22 @@ public final class Example {
         }
     }
 
-    private static class MessagesHandler implements Client.ResultHandler {
+    private static void handleMessageContent(TdApi.Message message) {
+        switch (message.content.getConstructor()) {
+            case TdApi.MessagePhoto.CONSTRUCTOR: {
+                TdApi.MessagePhoto messagePhoto = (TdApi.MessagePhoto) message.content;
+                int size = messagePhoto.photo.sizes.length - 1;
+                TdApi.File photo = messagePhoto.photo.sizes[size].photo;
+                photoIdsToMessages.put(photo.id, message);
+                downloadFile(photo.id, messagePhotoHandler);
+                break;
+            }
+            default:
+                Log.e(TAG, "Can't handle such content:" + newLine + message.content);
+        }
+    }
+
+    private static class ChatHistoryHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
@@ -407,6 +418,8 @@ public final class Example {
                                 client.send(new TdApi.GetUser(sender.userId), new UserHandler());
                             }
                         }
+
+                        handleMessageContent(message);
                     }
                     if (currentMessages.size() < 20 && size > 0) {
                         long lastMessageId = currentMessages.get(currentMessages.size() - 1).id;
@@ -424,14 +437,41 @@ public final class Example {
         }
     }
 
-    private static class FileHandler implements Client.ResultHandler {
+    private static class ProfilePhotoHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
-                case TdApi.File.CONSTRUCTOR:
-                    TdApi.File file = (TdApi.File) object;
-                    downloadFile(file.id);
+                case TdApi.File.CONSTRUCTOR: {
+                    TdApi.File photo = (TdApi.File) object;
+                    if (photo.local.isDownloadingActive) break;
+                    if (!photoIdsToChatIds.containsKey(photo.id)) break;
+                    Long chatId = photoIdsToChatIds.get(photo.id);
+                    TdApi.Chat chatWithPhoto = chats.get(chatId);
+                    chatWithPhoto.photo.small.local.path = photo.local.path;
+                    chatManager.addChatPhoto(chatWithPhoto);
                     break;
+                }
+                default:
+                    Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+            }
+        }
+    }
+
+    private static class MessagePhotoHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            switch (object.getConstructor()) {
+                case TdApi.File.CONSTRUCTOR: {
+                    TdApi.File photo = (TdApi.File) object;
+                    if (photo.local.isDownloadingActive) break;
+                    if (!photoIdsToMessages.containsKey(photo.id)) break;
+                    TdApi.Message message = photoIdsToMessages.get(photo.id);
+                    TdApi.MessagePhoto messagePhoto = (TdApi.MessagePhoto) message.content;
+                    int size = messagePhoto.photo.sizes.length - 1;
+                    messagePhoto.photo.sizes[size].photo.local.path = photo.local.path;
+                    chatManager.updateMessage(message);
+                    break;
+                }
                 default:
                     Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
             }
@@ -533,18 +573,19 @@ public final class Example {
                     break;
                 }
                 case TdApi.UpdateFile.CONSTRUCTOR: {
-                    TdApi.UpdateFile photo = (TdApi.UpdateFile) object;
-                    if (photo.file.local.isDownloadingActive) break;
-                    if (!photo.file.local.isDownloadingCompleted
-                            && photo.file.local.canBeDownloaded) {
-                        getFileInfo(photo.file.remote.id);
-                        break;
-                    }
-                    if (!photoRemoteIdsToChatIds.containsKey(photo.file.remote.id)) break;
-                    Long chatId = photoRemoteIdsToChatIds.get(photo.file.remote.id);
+/*                    TdApi.File photo = (TdApi.File) object;
+                    if (photo.local.isDownloadingActive) break;
+                    if (!photoRemoteIdsToChatIds.containsKey(photo.id)) break;
+                    Long chatId = photoRemoteIdsToChatIds.get(photo.id);
                     TdApi.Chat chatWithPhoto = chats.get(chatId);
-                    chatWithPhoto.photo.small.local.path = photo.file.local.path;
-                    chatManager.addChatPhoto(chatWithPhoto);
+                    chatWithPhoto.photo.small.local.path = photo.local.path;
+                    chatManager.addChatPhoto(chatWithPhoto);*/
+                    break;
+                }
+                case TdApi.UpdateNewMessage.CONSTRUCTOR:
+                    break;
+                case TdApi.UpdateChatPhoto.CONSTRUCTOR: {
+                    TdApi.UpdateChatPhoto updateChatPhoto = (TdApi.UpdateChatPhoto) object;
                     break;
                 }
                 default:
