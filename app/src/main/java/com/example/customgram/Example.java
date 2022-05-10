@@ -372,11 +372,12 @@ public final class Example {
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
                 case TdApi.Message.CONSTRUCTOR: {
-                    TdApi.Message message = (TdApi.Message) object;
+/*                    TdApi.Message message = (TdApi.Message) object;
                     synchronized (currentMessages) {
                         currentMessages.add(0, message);
+                        handleMessageContent(message);
                         chatManager.addMessage(message);
-                    }
+                    }*/
                     break;
                 }
                 default:
@@ -583,6 +584,14 @@ public final class Example {
                     break;
                 }
                 case TdApi.UpdateNewMessage.CONSTRUCTOR:
+                    TdApi.UpdateNewMessage updateNewMessage = (TdApi.UpdateNewMessage) object;
+                    TdApi.Message message = updateNewMessage.message;
+                    synchronized (currentMessages) {
+                        //if (currentMessages.contains(message)) break;
+                        currentMessages.add(0, message);
+                        handleMessageContent(message);
+                        chatManager.addMessage(message);
+                    }
                     break;
                 case TdApi.UpdateChatPhoto.CONSTRUCTOR: {
                     TdApi.UpdateChatPhoto updateChatPhoto = (TdApi.UpdateChatPhoto) object;

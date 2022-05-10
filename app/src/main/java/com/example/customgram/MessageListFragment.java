@@ -68,7 +68,9 @@ public class MessageListFragment extends Fragment {
         binding.recyclerMessages.setLayoutManager(llm);
         binding.recyclerMessages.setAdapter(mMessageRecyclerAdapter);
         binding.sendMessageButton.setOnClickListener(view -> {
-            Example.executeSendMessage(binding.newMessageText.getText().toString());
+            String text = binding.newMessageText.getText().toString();
+            binding.newMessageText.setText("");
+            Example.executeSendMessage(text);
         });
 
         return binding.getRoot();
