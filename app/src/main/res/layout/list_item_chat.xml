@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="100dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginTop="10dp"
     android:layout_marginBottom="10dp">
@@ -10,8 +10,7 @@
         android:id="@+id/chat_img"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/blue"
-        app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
+        app:shapeAppearanceOverlay="@style/AppTheme.roundedImageViewRounded"
         app:strokeColor="@null"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
@@ -32,8 +31,7 @@
         android:id="@+id/chat_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceListItem"
-        android:background="@color/teal_200"
+        android:textAppearance="@style/AppTheme.MessageTitle"
         android:layout_marginStart="10dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/last_msg"
@@ -43,8 +41,10 @@
         android:id="@+id/last_msg"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:textAppearance="?attr/textAppearanceListItem"
+        android:textAppearance="@style/AppTheme.MessageText"
         android:layout_marginStart="10dp"
+        android:maxLines="2"
+        android:ellipsize="end"
         app:layout_constraintTop_toBottomOf="@id/chat_title"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/chat_img"
@@ -53,6 +53,6 @@
         android:id="@+id/chat_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/transparent" />
+        android:background="@color/colorTransparent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

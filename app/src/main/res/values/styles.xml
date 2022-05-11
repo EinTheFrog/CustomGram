@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="roundedImageViewRounded">
+    <style name="AppTheme.MessageTitle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+    <style name="AppTheme.MessageText">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/colorText</item>
+    </style>
+    <style name="AppTheme.Toolbar">
+        <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/colorText</item>
+    </style>
+    <style name="AppTheme.Message">
+        <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
+    <style name="AppTheme.roundedImageViewRounded">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>

@@ -51,7 +51,7 @@ public class ToolbarChatInfoFragment extends Fragment {
             binding.toolbarChatImg.setImageDrawable(null);
             Context photoContext = binding.toolbarChatImg.getContext();
             binding.toolbarChatImg.setBackgroundColor(
-                    ContextCompat.getColor(photoContext, R.color.blue)
+                    ContextCompat.getColor(photoContext, R.color.colorAccent)
             );
             binding.toolbarAltChatImg.setText(ChatAltPhotoHelper.getChatInitials(chat));
         }

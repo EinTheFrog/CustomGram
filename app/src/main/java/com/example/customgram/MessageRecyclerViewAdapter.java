@@ -53,10 +53,10 @@ public class MessageRecyclerViewAdapter
         setMessageText(message, holder);
         setMessagePhoto(message, holder);
         setMessageAlignment(message, holder);
-
     }
 
     private void setMessageTitle(TdApi.Message message, ViewHolder holder) {
+        holder.messageFrom.setVisibility(View.GONE);
         if (mChatType.getConstructor() == TdApi.ChatTypePrivate.CONSTRUCTOR) return;
         if (getMessageSenderName == null) return;
         if (message.senderId.getConstructor() == TdApi.MessageSenderUser.CONSTRUCTOR) {
@@ -65,6 +65,7 @@ public class MessageRecyclerViewAdapter
         } else if (message.senderId.getConstructor() == TdApi.MessageSenderChat.CONSTRUCTOR) {
             holder.messageFrom.setText(mChatName);
         }
+        holder.messageFrom.setVisibility(View.VISIBLE);
     }
 
     private void setMessageText(TdApi.Message message, ViewHolder holder) {

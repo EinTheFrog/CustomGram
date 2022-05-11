@@ -21,7 +21,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="300dp"
-        android:background="@color/teal_200"
         android:hint="@string/editText_phoneNumber_default"
         android:textAlignment="center"
         android:inputType="number"

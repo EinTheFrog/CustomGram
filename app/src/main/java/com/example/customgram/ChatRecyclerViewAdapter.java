@@ -67,7 +67,7 @@ public class ChatRecyclerViewAdapter extends
             holder.chatPhoto.setImageDrawable(null);
             Context photoContext = holder.chatPhoto.getContext();
             holder.chatPhoto.setBackgroundColor(
-                    ContextCompat.getColor(photoContext, R.color.blue)
+                    ContextCompat.getColor(photoContext, R.color.colorAccent)
             );
             holder.altChatPhotoText.setText(ChatAltPhotoHelper.getChatInitials(chat));
         }
