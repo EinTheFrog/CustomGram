@@ -9,7 +9,6 @@
         android:id="@+id/toolbar_chat_img"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/colorAccent"
         app:shapeAppearanceOverlay="@style/AppTheme.roundedImageViewRounded"
         app:strokeColor="@null"
         app:layout_constraintDimensionRatio="1:1"

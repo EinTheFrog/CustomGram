@@ -1,9 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="AppTheme"
         parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@color/colorBackground</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/gray_blue</item>
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorPrimaryDark">@color/dark_blue</item>
+        <item name="colorAccent">@color/pink</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.Customgram.Headline6</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.Customgram.Body1</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.Customgram.Subtitle1</item>
     </style>
 </resources>
