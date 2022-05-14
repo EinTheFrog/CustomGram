@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,12 +50,22 @@ public class ChatListFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         chats = chatManager.getChats();
-        Log.d(TAG, "Copied chats. Chats size: " + chats.size());
         chatsBuffer = new HashMap<>();
         for (int i = 0; i < chats.size(); i++) {
             chatsBuffer.put(i, chats.get(i));
         }
         mChatRecyclerAdapter  = new ChatRecyclerViewAdapter(chats);
+
+        Example.authorizationState.observe(getActivity(), value -> {
+            if (value.getConstructor() == TdApi.AuthorizationStateLoggingOut.CONSTRUCTOR) {
+                chats.clear();
+            }
+        });
+        chatManager.setOnNewChat(this::updateNewChat);
+        chatManager.setOnRemoveChat(this::updateRemoveChat);
+        chatManager.setOnChatPhotoChange(this::updateChatPhoto);
+        chatManager.setOnChatLastMessageChange(this::updateChatLastMessage);
+        mChatRecyclerAdapter.setOnChatClicked(this::openMessages);
 
         ChatListFragmentBinding binding = ChatListFragmentBinding.inflate(
                 inflater,
@@ -63,12 +75,7 @@ public class ChatListFragment extends Fragment {
         Context context = binding.getRoot().getContext();
         binding.recyclerChats.setLayoutManager(new LinearLayoutManager(context));
         binding.recyclerChats.setAdapter(mChatRecyclerAdapter);
-
-        chatManager.setOnNewChat(this::updateNewChat);
-        chatManager.setOnRemoveChat(this::updateRemoveChat);
-        chatManager.setOnChatPhotoChange(this::updateChatPhoto);
-        chatManager.setOnChatLastMessageChange(this::updateChatLastMessage);
-        mChatRecyclerAdapter.setOnChatClicked(this::openMessages);
+        activity.setSupportActionBar(binding.myToolbar);
 
         return binding.getRoot();
     }

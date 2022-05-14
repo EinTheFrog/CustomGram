@@ -49,6 +49,12 @@ public class ChatRecyclerViewAdapter extends
             }
         });
 
+        setLastMessageText(chat, holder);
+
+        setChatPhoto(chat, holder);
+    }
+
+    private void setLastMessageText(TdApi.Chat chat, ViewHolder holder) {
         String text = "";
         TdApi.Message lstMsg = chat.lastMessage;
         if (lstMsg != null && lstMsg.content.getConstructor() == TdApi.MessageText.CONSTRUCTOR) {
@@ -56,15 +62,16 @@ public class ChatRecyclerViewAdapter extends
             text = msgText.text.text;
         }
         holder.lastMsg.setText(text);
+    }
 
+    private void setChatPhoto(TdApi.Chat chat, ViewHolder holder) {
+        holder.chatPhoto.setImageDrawable(null);
+        holder.altChatPhotoText.setText("");
         if (chat.photo != null && !chat.photo.small.local.path.equals("")) {
-            Log.d(TAG, "Adding photo to chat with name: " + chat.title);
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(chat.photo.small.local.path, bmOptions);
             holder.chatPhoto.setImageBitmap(bitmap);
-            holder.altChatPhotoText.setText("");
         } else {
-            holder.chatPhoto.setImageDrawable(null);
             Context photoContext = holder.chatPhoto.getContext();
             holder.chatPhoto.setBackgroundColor(
                     ContextCompat.getColor(photoContext, R.color.pink)

@@ -3,6 +3,9 @@ package com.example.customgram;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import org.drinkless.td.libcore.telegram.Client;
 import org.drinkless.td.libcore.telegram.TdApi;
 
@@ -34,7 +37,6 @@ public final class Example {
     private static String authenticationCode;
 
     private static ChatManager chatManager;
-    private static Consumer<TdApi.AuthorizationState> onStateChange;
 
     private static final ProfilePhotoHandler profilePhotoHandler = new ProfilePhotoHandler();
     private static final ChatHistoryHandler chatHistoryHandler = new ChatHistoryHandler();
@@ -53,7 +55,7 @@ public final class Example {
     private static final String PHONE_PREFIX = "999662";
     private static String phoneNumber = PHONE_PREFIX + "1111";
 
-    public static TdApi.AuthorizationState authorizationState = null;
+    public static MutableLiveData<TdApi.AuthorizationState> authorizationState = new MutableLiveData<>();
     private static volatile boolean needQuit = false;
 
     private static final ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<>();
@@ -80,11 +82,6 @@ public final class Example {
     public static void setChatViewManager(ChatManager manager) {
         chatManager = manager;
     }
-
-    public static void setOnStateChange(Consumer<TdApi.AuthorizationState> fun) {
-        onStateChange = fun;
-    }
-
 
     public static List<TdApi.Chat> getChats() {
         List<TdApi.Chat> list = new ArrayList<>();
@@ -136,10 +133,9 @@ public final class Example {
 
     private static void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) {
         if (authorizationState != null) {
-            Example.authorizationState = authorizationState;
-            onStateChange.accept(authorizationState);
+            Example.authorizationState.setValue(authorizationState);
         }
-        switch (Example.authorizationState.getConstructor()) {
+        switch (Example.authorizationState.getValue().getConstructor()) {
             case TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR:
                 TdApi.TdlibParameters parameters = new TdApi.TdlibParameters();
                 parameters.databaseDirectory = databaseDirectory;
@@ -222,6 +218,7 @@ public final class Example {
     }
 
     public static void executeLogOut() {
+        chats.clear();
         mainChatList.clear();
         currentMessages.clear();
         haveFullMainChatList = false;
@@ -236,6 +233,7 @@ public final class Example {
     public static void main(String dbDir, String logFileName, int apiId,
                             String apiHash, String systemLanguageCode, String authenticationCode
     ) throws InterruptedException {
+        if (client != null) return;
         databaseDirectory = dbDir;
         Example.apiId = apiId;
         Example.apiHash = apiHash;

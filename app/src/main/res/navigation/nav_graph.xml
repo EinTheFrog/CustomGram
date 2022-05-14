@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/chats_fragment">
+    <activity
+        android:id="@+id/activity_login"
+        android:name="com.example.customgram.LoginActivity"
+        tools:layout="@layout/activity_login">
+    </activity>
+    <activity
+        android:id="@+id/chats_activity"
+        android:name="com.example.customgram.ChatsActivity"
+        tools:layout="@layout/activity_chats">
+    </activity>
+    <fragment
+        android:id="@+id/chats_fragment"
+        android:name="com.example.customgram.ChatListFragment"
+        tools:layout="@layout/chat_list_fragment">
+        <action
+            android:id="@+id/action_chats_fragment_to_messages_fragment"
+            app:destination="@id/messages_fragment"/>
+    </fragment>
+    <fragment
+        android:id="@+id/messages_fragment"
+        android:name="com.example.customgram.MessageListFragment"
+        tools:layout="@layout/message_list_fragment">
+        <action
+            android:id="@+id/action_messages_fragment_to_chats_fragment"
+            app:popUpTo="@id/chats_fragment"/>
+    </fragment>
+
+</navigation>
