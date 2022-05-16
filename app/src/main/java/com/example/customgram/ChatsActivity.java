@@ -8,6 +8,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
@@ -49,6 +50,13 @@ public class ChatsActivity extends AppCompatActivity {
             }
         });
         setSupportActionBar(binding.myToolbar);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
+                this, binding.getRoot(), binding.myToolbar,
+                R.string.open_drawer_description,
+                R.string.close_drawer_description
+        );
+        binding.getRoot().addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
 
         NavHostFragment navHostFragment = binding.navHostFragment.getFragment();
         navController = navHostFragment.getNavController();
