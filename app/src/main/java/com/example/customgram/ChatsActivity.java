@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -29,6 +30,7 @@ public class ChatsActivity extends AppCompatActivity {
 
     ActivityChatsBinding binding;
     NavController navController;
+    FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +39,33 @@ public class ChatsActivity extends AppCompatActivity {
         binding = ActivityChatsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.buttonLogout.setOnClickListener(view -> {
-            binding.getRoot().closeDrawer(Gravity.LEFT);
-            Example.executeLogOut();
+        binding.navView.setNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.item_logout) {
+                binding.getRoot().closeDrawer(GravityCompat.START);
+                Example.executeLogOut();
+                return true;
+            } else {
+                return super.onOptionsItemSelected(item);
+            }
         });
+        setSupportActionBar(binding.myToolbar);
 
         NavHostFragment navHostFragment = binding.navHostFragment.getFragment();
         navController = navHostFragment.getNavController();
+
+        navController.addOnDestinationChangedListener((controller, destination, args) -> {
+            if (destination.getId() == R.id.chats_fragment) {
+                fragmentManager = getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.toolbar_fragment, ToolbarDefaultFragment.class, null);
+                transaction.commit();
+            } else if (destination.getId() == R.id.messages_fragment) {
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.toolbar_fragment, ToolbarChatInfoFragment.class, null);
+                transaction.commit();
+            }
+        });
+
 
         String dbDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/tdlib";
         CustomApplication customApp = (CustomApplication) getApplication();
@@ -55,6 +77,7 @@ public class ChatsActivity extends AppCompatActivity {
     public void openMessages(TdApi.Chat chat) {
         Example.executeGetChatHistory(chat.id);
         ChatManager.getInstance().setCurrentChat(chat);
+
         navController.navigate(R.id.action_chats_fragment_to_messages_fragment);
     }
 

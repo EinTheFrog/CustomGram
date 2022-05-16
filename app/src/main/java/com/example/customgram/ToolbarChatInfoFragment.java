@@ -35,8 +35,10 @@ public class ToolbarChatInfoFragment extends Fragment {
         );
         ChatManager chatManager = ChatManager.getInstance();
         TdApi.Chat chat = chatManager.getCurrentChat();
-        binding.toolbarChatTitle.setText(chat.title);
-        setTitle(chat, binding);
+        if (chat != null) {
+            binding.toolbarChatTitle.setText(chat.title);
+            setTitle(chat, binding);
+        }
 
         return binding.getRoot();
     }

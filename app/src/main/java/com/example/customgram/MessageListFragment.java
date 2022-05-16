@@ -76,7 +76,6 @@ public class MessageListFragment extends Fragment {
             binding.newMessageText.setText("");
             Example.executeSendMessage(text);
         });
-        activity.setSupportActionBar(binding.myToolbar);
 
         return binding.getRoot();
     }

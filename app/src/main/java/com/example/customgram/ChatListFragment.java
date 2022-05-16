@@ -77,7 +77,6 @@ public class ChatListFragment extends Fragment {
         Context context = binding.getRoot().getContext();
         binding.recyclerChats.setLayoutManager(new LinearLayoutManager(context));
         binding.recyclerChats.setAdapter(mChatRecyclerAdapter);
-        activity.setSupportActionBar(binding.myToolbar);
 
         return binding.getRoot();
     }
