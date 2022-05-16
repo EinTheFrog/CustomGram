@@ -56,9 +56,11 @@ public class ChatListFragment extends Fragment {
         }
         mChatRecyclerAdapter  = new ChatRecyclerViewAdapter(chats);
 
-        Example.authorizationState.observe(getActivity(), value -> {
+        Example.authorizationStateData.observe(getActivity(), value -> {
+            Log.d(TAG, "On state change");
             if (value.getConstructor() == TdApi.AuthorizationStateLoggingOut.CONSTRUCTOR) {
                 chats.clear();
+                mChatRecyclerAdapter.notifyDataSetChanged();
             }
         });
         chatManager.setOnNewChat(this::updateNewChat);

@@ -55,7 +55,8 @@ public final class Example {
     private static final String PHONE_PREFIX = "999662";
     private static String phoneNumber = PHONE_PREFIX + "1111";
 
-    public static MutableLiveData<TdApi.AuthorizationState> authorizationState = new MutableLiveData<>();
+    public static MutableLiveData<TdApi.AuthorizationState> authorizationStateData
+            = new MutableLiveData<>();
     private static volatile boolean needQuit = false;
 
     private static final ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<>();
@@ -132,11 +133,14 @@ public final class Example {
     }
 
     private static void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) {
-        if (authorizationState != null) {
-            Example.authorizationState.setValue(authorizationState);
-        }
-        switch (Example.authorizationState.getValue().getConstructor()) {
+        if (authorizationState == null) return;
+        Log.d(TAG, "Posting new state value: " + authorizationState.getClass());
+        authorizationStateData.postValue(authorizationState);
+        Log.d(TAG, "Posted new state value");
+
+        switch (authorizationState.getConstructor()) {
             case TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR:
+                Log.d(TAG, "Sending tdlib params");
                 TdApi.TdlibParameters parameters = new TdApi.TdlibParameters();
                 parameters.databaseDirectory = databaseDirectory;
                 parameters.useMessageDatabase = true;
@@ -187,7 +191,7 @@ public final class Example {
                 }
                 break;
             default:
-                Log.e(TAG, "Unsupported authorization state:" + newLine + Example.authorizationState);
+                Log.e(TAG, "Unsupported authorization state:" + newLine + authorizationState);
         }
     }
 

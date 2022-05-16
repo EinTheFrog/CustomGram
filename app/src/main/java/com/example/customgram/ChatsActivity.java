@@ -2,6 +2,7 @@ package com.example.customgram;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +25,8 @@ import org.drinkless.td.libcore.telegram.TdApi;
 import java.util.concurrent.ExecutorService;
 
 public class ChatsActivity extends AppCompatActivity {
+    private static String TAG = "CHATS_ACTIVITY";
+
     ActivityChatsBinding binding;
     NavController navController;
 
@@ -35,6 +38,7 @@ public class ChatsActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.buttonLogout.setOnClickListener(view -> {
+            binding.getRoot().closeDrawer(Gravity.LEFT);
             Example.executeLogOut();
         });
 
@@ -44,7 +48,7 @@ public class ChatsActivity extends AppCompatActivity {
         String dbDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/tdlib";
         CustomApplication customApp = (CustomApplication) getApplication();
         Example.setChatViewManager(ChatManager.getInstance());
-        Example.authorizationState.observe(this, this::onStateChange);
+        Example.authorizationStateData.observe(this, this::onStateChange);
         startTdLoop(dbDir, customApp.executor);
     }
 
@@ -71,6 +75,7 @@ public class ChatsActivity extends AppCompatActivity {
     }
 
     private void onStateChange(TdApi.AuthorizationState newState) {
+        Log.d(TAG, "On state change");
         switch (newState.getConstructor()) {
             case TdApi.AuthorizationStateReady.CONSTRUCTOR: {
                 Example.executeGetChats(20);
@@ -78,9 +83,7 @@ public class ChatsActivity extends AppCompatActivity {
             }
             case TdApi.AuthorizationStateWaitPhoneNumber.CONSTRUCTOR: {
                 ChatManager.getInstance().clearChats();
-                runOnUiThread(() -> {
-                    navController.navigate(R.id.activity_login);
-                });
+                navController.navigate(R.id.activity_login);
                 break;
             }
         }
