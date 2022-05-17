@@ -14,7 +14,9 @@ import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.ActivityNavigator;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -29,9 +31,10 @@ import java.util.concurrent.ExecutorService;
 public class ChatsActivity extends AppCompatActivity {
     private static String TAG = "CHATS_ACTIVITY";
 
-    ActivityChatsBinding binding;
-    NavController navController;
-    FragmentManager fragmentManager;
+    private ActivityChatsBinding binding;
+    private NavController navController;
+    private FragmentManager fragmentManager;
+    private AppBarConfiguration appBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,37 +52,45 @@ public class ChatsActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
             }
         });
-        setSupportActionBar(binding.myToolbar);
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
-                this, binding.getRoot(), binding.myToolbar,
-                R.string.open_drawer_description,
-                R.string.close_drawer_description
-        );
-        binding.getRoot().addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
 
         NavHostFragment navHostFragment = binding.navHostFragment.getFragment();
         navController = navHostFragment.getNavController();
+        navController.addOnDestinationChangedListener(this::handleDestinationChange);
 
-        navController.addOnDestinationChangedListener((controller, destination, args) -> {
-            if (destination.getId() == R.id.chats_fragment) {
-                fragmentManager = getSupportFragmentManager();
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.toolbar_fragment, ToolbarDefaultFragment.class, null);
-                transaction.commit();
-            } else if (destination.getId() == R.id.messages_fragment) {
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.toolbar_fragment, ToolbarChatInfoFragment.class, null);
-                transaction.commit();
-            }
-        });
-
+        AppBarConfiguration.Builder appBarConfBuilder =
+                new AppBarConfiguration.Builder(navController.getGraph());
+        appBarConfiguration =
+                (appBarConfBuilder.setOpenableLayout(binding.getRoot())).build();
+        //setSupportActionBar(binding.myToolbar);
+        NavigationUI.setupWithNavController(binding.myToolbar, navController, appBarConfiguration);
 
         String dbDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/tdlib";
         CustomApplication customApp = (CustomApplication) getApplication();
         Example.setChatViewManager(ChatManager.getInstance());
         Example.authorizationStateData.observe(this, this::onStateChange);
         startTdLoop(dbDir, customApp.executor);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return navController.navigateUp() || super.onSupportNavigateUp();
+    }
+
+    private void handleDestinationChange(
+            NavController controller,
+            NavDestination destination,
+            Bundle args
+    ) {
+        if (destination.getId() == R.id.chats_fragment) {
+            fragmentManager = getSupportFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.toolbar_fragment, ToolbarDefaultFragment.class, null);
+            transaction.commit();
+        } else if (destination.getId() == R.id.messages_fragment) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.toolbar_fragment, ToolbarChatInfoFragment.class, null);
+            transaction.commit();
+        }
     }
 
     public void openMessages(TdApi.Chat chat) {
