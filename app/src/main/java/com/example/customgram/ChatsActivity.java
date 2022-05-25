@@ -42,16 +42,7 @@ public class ChatsActivity extends AppCompatActivity {
 
         binding = ActivityChatsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        binding.navView.setNavigationItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.item_logout) {
-                binding.getRoot().closeDrawer(GravityCompat.START);
-                Example.executeLogOut();
-                return true;
-            } else {
-                return super.onOptionsItemSelected(item);
-            }
-        });
+        setSupportActionBar(binding.myToolbar);
 
         NavHostFragment navHostFragment = binding.navHostFragment.getFragment();
         navController = navHostFragment.getNavController();
@@ -59,9 +50,9 @@ public class ChatsActivity extends AppCompatActivity {
 
         AppBarConfiguration.Builder appBarConfBuilder =
                 new AppBarConfiguration.Builder(navController.getGraph());
-        appBarConfiguration =
-                (appBarConfBuilder.setOpenableLayout(binding.getRoot())).build();
-        //setSupportActionBar(binding.myToolbar);
+        appBarConfiguration = appBarConfBuilder
+                .setOpenableLayout(binding.getRoot())
+                .build();
         NavigationUI.setupWithNavController(binding.myToolbar, navController, appBarConfiguration);
 
         String dbDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/tdlib";
@@ -74,6 +65,24 @@ public class ChatsActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         return navController.navigateUp() || super.onSupportNavigateUp();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.chats_options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.item_logout) {
+            binding.getRoot().closeDrawer(GravityCompat.START);
+            Example.executeLogOut();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void handleDestinationChange(
@@ -91,6 +100,10 @@ public class ChatsActivity extends AppCompatActivity {
             transaction.replace(R.id.toolbar_fragment, ToolbarChatInfoFragment.class, null);
             transaction.commit();
         }
+    }
+
+    public void openUserInfo() {
+        navController.navigate(R.id.action_chats_fragment_to_user_info_fragment);
     }
 
     public void openMessages(TdApi.Chat chat) {
@@ -120,6 +133,7 @@ public class ChatsActivity extends AppCompatActivity {
         Log.d(TAG, "On state change");
         switch (newState.getConstructor()) {
             case TdApi.AuthorizationStateReady.CONSTRUCTOR: {
+                Example.executeGetMe();
                 Example.executeGetChats(20);
                 break;
             }

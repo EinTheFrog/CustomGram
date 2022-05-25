@@ -3,9 +3,9 @@ package com.example.customgram;
 import org.drinkless.td.libcore.telegram.TdApi;
 
 public class ChatAltPhotoHelper {
-    public static String getChatInitials(TdApi.Chat chat) {
+    public static String getTitleInitials(String title) {
         String altPhotoText;
-        String[] words = chat.title.split(" ");
+        String[] words = title.split(" ");
         switch (words.length) {
             case 0: {
                 altPhotoText = "";

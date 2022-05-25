@@ -60,7 +60,7 @@ public final class Example {
     private static volatile boolean needQuit = false;
 
     private static final ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Integer, Long> photoIdsToChatIds = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Integer, Long> photoIdsToChatIds = new ConcurrentHashMap<>();
 
     private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<>();
     private static boolean haveFullMainChatList = false;
@@ -69,6 +69,7 @@ public final class Example {
     private static final ConcurrentHashMap<Integer, TdApi.Message> photoIdsToMessages = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<Long, TdApi.User> users = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Integer, Long> photoIdsToUserIds = new ConcurrentHashMap<>();
 
     private static final String newLine = System.getProperty("line.separator");
 
@@ -221,6 +222,10 @@ public final class Example {
         );
     }
 
+    public static void executeGetMe() {
+        client.send(new TdApi.GetMe(), new GetMeHandler());
+    }
+
     public static void executeLogOut() {
         chats.clear();
         mainChatList.clear();
@@ -323,7 +328,6 @@ public final class Example {
         throw new IllegalArgumentException();
     }
 
-
     private static void addChat(TdApi.Chat chat) {
         chats.put(chat.id, chat);
 
@@ -346,10 +350,31 @@ public final class Example {
         );
     }
 
+    private static void saveUser(TdApi.User user) {
+        users.put(user.id, user);
+        chatManager.addUser(user);
+        if (user.profilePhoto == null) return;
+        photoIdsToUserIds.put(user.profilePhoto.small.id, user.id);
+        downloadFile(user.profilePhoto.small.id, profilePhotoHandler);
+    }
+
     private static class DefaultHandler implements Client.ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
             Log.i(TAG, object.toString());
+        }
+    }
+
+    private static class GetMeHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            if (object.getConstructor() != TdApi.User.CONSTRUCTOR) {
+                Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+                return;
+            }
+            TdApi.User user = (TdApi.User) object;
+            chatManager.setCurrentUser(user);
+            saveUser(user);
         }
     }
 
@@ -359,8 +384,7 @@ public final class Example {
             switch (object.getConstructor()) {
                 case TdApi.User.CONSTRUCTOR: {
                     TdApi.User user = (TdApi.User) object;
-                    users.put(user.id, user);
-                    chatManager.addUser(user);
+                    saveUser(user);
                     break;
                 }
                 default:
@@ -447,11 +471,18 @@ public final class Example {
                 case TdApi.File.CONSTRUCTOR: {
                     TdApi.File photo = (TdApi.File) object;
                     if (photo.local.isDownloadingActive) break;
-                    if (!photoIdsToChatIds.containsKey(photo.id)) break;
-                    Long chatId = photoIdsToChatIds.get(photo.id);
-                    TdApi.Chat chatWithPhoto = chats.get(chatId);
-                    chatWithPhoto.photo.small.local.path = photo.local.path;
-                    chatManager.addChatPhoto(chatWithPhoto);
+                    if (photoIdsToChatIds.containsKey(photo.id)) {
+                        Long chatId = photoIdsToChatIds.get(photo.id);
+                        TdApi.Chat chatWithPhoto = chats.get(chatId);
+                        chatWithPhoto.photo.small.local.path = photo.local.path;
+                        chatManager.addChatPhoto(chatWithPhoto);
+                    } else if (photoIdsToUserIds.containsKey(photo.id)) {
+                        Long userId = photoIdsToUserIds.get(photo.id);
+                        TdApi.User userWithPhoto = users.get(userId);
+                        userWithPhoto.profilePhoto.small.local.path = photo.local.path;
+                        chatManager.addUserPhoto(userWithPhoto);
+                    }
+
                     break;
                 }
                 default:

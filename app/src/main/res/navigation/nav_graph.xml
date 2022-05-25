@@ -20,7 +20,10 @@
         tools:layout="@layout/chat_list_fragment">
         <action
             android:id="@+id/action_chats_fragment_to_messages_fragment"
-            app:destination="@id/messages_fragment"/>
+            app:destination="@id/messages_fragment" />
+        <action
+            android:id="@+id/action_chats_fragment_to_user_info_fragment"
+            app:destination="@id/user_info_fragment" />
     </fragment>
     <fragment
         android:id="@+id/messages_fragment"
@@ -28,7 +31,10 @@
         tools:layout="@layout/message_list_fragment">
         <action
             android:id="@+id/action_messages_fragment_to_chats_fragment"
-            app:popUpTo="@id/chats_fragment"/>
+            app:popUpTo="@id/chats_fragment" />
     </fragment>
-
+    <fragment
+        android:id="@+id/user_info_fragment"
+        android:name="com.example.customgram.UserInfoFragment"
+        tools:layout="@layout/user_info_fragment" />
 </navigation>

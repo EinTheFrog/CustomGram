@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ChatManager {
     private static final String TAG = "CHAT_MANAGER";
@@ -27,7 +28,11 @@ public class ChatManager {
     private Consumer<TdApi.Message[]> onNewMessages;
     private Consumer<TdApi.Message> onMessageUpdate;
     private Consumer<TdApi.User> onNewUser;
+    private Consumer<TdApi.User> onUserPhotoChange;
+    private Runnable onCurrentUserChange;
+    private Runnable onCurrentUserPhotoChange;
     private TdApi.Chat currentChat;
+    private TdApi.User currentUser;
 
     private ChatManager() {
     }
@@ -101,6 +106,15 @@ public class ChatManager {
         }
     }
 
+    public void addUserPhoto(TdApi.User user) {
+        if (onUserPhotoChange != null) {
+            onUserPhotoChange.accept(user);
+            if (user.id == currentChat.id && onCurrentUserPhotoChange != null) {
+                onCurrentUserPhotoChange.run();
+            }
+        }
+    }
+
     public void setOnNewChat(BiConsumer<TdApi.Chat, Integer> fun) {
         onNewChat = fun;
     }
@@ -149,6 +163,18 @@ public class ChatManager {
         onNewUser = fun;
     }
 
+    public void setOnUserPhotoChange(Consumer<TdApi.User> fun) {
+        onUserPhotoChange = fun;
+    }
+
+    public void setOnCurrentUserChange(Runnable fun) {
+        onCurrentUserChange = fun;
+    }
+
+    public void setOnCurrentUserPhotoChange(Runnable fun) {
+        onCurrentUserPhotoChange = fun;
+    }
+
     public Map<Long, TdApi.User> getUsers() {
         return new HashMap<>(users);
     }
@@ -163,5 +189,16 @@ public class ChatManager {
 
     public TdApi.Chat getCurrentChat() {
         return currentChat;
+    }
+
+    public void setCurrentUser(TdApi.User user) {
+        if (onCurrentUserChange != null) {
+            onCurrentUserChange.run();
+        }
+        currentUser = user;
+    }
+
+    public TdApi.User getCurrentUser() {
+        return currentUser;
     }
 }
