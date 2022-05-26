@@ -1,5 +1,7 @@
 package com.example.customgram;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -12,6 +14,7 @@ import org.drinkless.td.libcore.telegram.TdApi;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,6 +82,10 @@ public final class Example {
         } catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getPhotosDir() {
+        return databaseDirectory + "/photos";
     }
 
     public static void setChatViewManager(ChatManager manager) {
@@ -222,6 +229,24 @@ public final class Example {
         );
     }
 
+    public static void executeSendMessage(String text, String photoPath) {
+        TdApi.FormattedText formattedText = new TdApi.FormattedText(text, null);
+        TdApi.InputMessagePhoto messagePhoto = new TdApi.InputMessagePhoto(
+                new TdApi.InputFileLocal(photoPath), null, new int[0],
+                200, 200, formattedText, 0
+        );
+        client.send(
+                new TdApi.SendMessage(
+                        currentChatId,
+                        0,
+                        0,
+                        null,
+                        null,
+                        messagePhoto),
+                sentMessageHandler
+        );
+    }
+
     public static void executeGetMe() {
         client.send(new TdApi.GetMe(), new GetMeHandler());
     }
@@ -239,11 +264,11 @@ public final class Example {
         client.send(new TdApi.Close(), defaultHandler);
     }
 
-    public static void main(String dbDir, String logFileName, int apiId,
+    public static void main(String databaseDirectory, String logFileName, int apiId,
                             String apiHash, String systemLanguageCode, String authenticationCode
     ) throws InterruptedException {
         if (client != null) return;
-        databaseDirectory = dbDir;
+        Example.databaseDirectory = databaseDirectory;
         Example.apiId = apiId;
         Example.apiHash = apiHash;
         Example.systemLanguageCode = systemLanguageCode;
@@ -253,7 +278,7 @@ public final class Example {
 
         TdApi.Object result = Client.execute(new TdApi.SetLogStream(
                 new TdApi.LogStreamFile(
-                        dbDir + logFileName,
+                        databaseDirectory + logFileName,
                         1 << 27,
                         true
                 )
