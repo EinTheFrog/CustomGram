@@ -125,7 +125,6 @@ public class MessageListFragment extends Fragment {
 
         binding.pinImageButton.setOnClickListener(view -> {
             tryToLoadImage();
-            binding.pinnedImage.setVisibility(View.VISIBLE);
         });
 
         binding.pinnedImage.setVisibility(View.GONE);
@@ -205,7 +204,7 @@ public class MessageListFragment extends Fragment {
 
     private void loadImageFromGallery() {
         Intent intent = new Intent(
-                Intent.ACTION_OPEN_DOCUMENT,
+                Intent.ACTION_PICK,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         );
         galleryLauncher.launch(intent);
@@ -217,6 +216,7 @@ public class MessageListFragment extends Fragment {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
             binding.pinnedImage.setImageBitmap(bitmap);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            binding.pinnedImage.setVisibility(View.VISIBLE);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -245,12 +245,5 @@ public class MessageListFragment extends Fragment {
             }
         }
         return result;
-    }
-
-    private void pinImage(String path) {
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(path, bmOptions);
-        binding.pinnedImage.setImageBitmap(bitmap);
-        binding.pinnedImage.setVisibility(View.VISIBLE);
     }
 }

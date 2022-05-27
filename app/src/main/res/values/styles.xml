@@ -11,7 +11,8 @@
         <item name="android:textSize">22sp</item>
     </style>
     <style name="AppTheme.Message">
-        <item name="android:background">?colorPrimaryDark</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:background">@drawable/bg_message_shell</item>
     </style>
 
     <style name="TextAppearance.Customgram.Headline6"

@@ -62,16 +62,24 @@ public class MessageRecyclerViewAdapter
         if (message.senderId.getConstructor() == TdApi.MessageSenderUser.CONSTRUCTOR) {
             TdApi.MessageSenderUser sender = (TdApi.MessageSenderUser) message.senderId;
             holder.messageFrom.setText(getMessageSenderName.apply(sender.userId));
+            holder.messageFrom.setVisibility(View.VISIBLE);
         } else if (message.senderId.getConstructor() == TdApi.MessageSenderChat.CONSTRUCTOR) {
             holder.messageFrom.setText(mChatName);
+            holder.messageFrom.setVisibility(View.VISIBLE);
         }
-        holder.messageFrom.setVisibility(View.VISIBLE);
     }
 
     private void setMessageText(TdApi.Message message, ViewHolder holder) {
-        if (message.content.getConstructor() != TdApi.MessageText.CONSTRUCTOR) return;
-        TdApi.MessageText messageText = (TdApi.MessageText) message.content;
-        holder.messageText.setText(messageText.text.text);
+        int contentConstructor = message.content.getConstructor();
+        if (contentConstructor == TdApi.MessageText.CONSTRUCTOR) {
+            TdApi.MessageText messageText = (TdApi.MessageText) message.content;
+            holder.messageText.setText(messageText.text.text);
+        } else if (contentConstructor == TdApi.MessagePhoto.CONSTRUCTOR) {
+            TdApi.MessagePhoto messagePhoto = (TdApi.MessagePhoto) message.content;
+            if (messagePhoto.caption.text.equals("")) {
+                holder.messageText.setVisibility(View.GONE);
+            }
+        }
     }
 
     private void setMessagePhoto(TdApi.Message message, ViewHolder holder) {

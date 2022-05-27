@@ -213,6 +213,7 @@ public final class Example {
     }
 
     public static void executeSendMessage(String text) {
+        if (text.equals("")) return;
         TdApi.FormattedText formattedText = new TdApi.FormattedText(text, null);
         TdApi.InputMessageText messageText = new TdApi.InputMessageText(
                 formattedText, false, true
