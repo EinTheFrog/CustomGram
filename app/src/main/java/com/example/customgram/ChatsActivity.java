@@ -103,7 +103,9 @@ public class ChatsActivity extends AppCompatActivity {
     }
 
     public void openUserInfo() {
+        Example.executeGetMe();
         navController.navigate(R.id.action_chats_fragment_to_user_info_fragment);
+        binding.getRoot().closeDrawers();
     }
 
     public void openMessages(TdApi.Chat chat) {
@@ -133,7 +135,6 @@ public class ChatsActivity extends AppCompatActivity {
         Log.d(TAG, "On state change");
         switch (newState.getConstructor()) {
             case TdApi.AuthorizationStateReady.CONSTRUCTOR: {
-                Example.executeGetMe();
                 Example.executeGetChats(20);
                 break;
             }

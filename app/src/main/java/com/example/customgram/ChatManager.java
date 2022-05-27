@@ -16,10 +16,15 @@ import java.util.function.Function;
 public class ChatManager {
     private static final String TAG = "CHAT_MANAGER";
 
+    private static ChatManager instance;
+
     private final List<TdApi.Chat> chats = new LinkedList<>();
     private final List<TdApi.Message> messages = new ArrayList<>();
     private final Map<Long, TdApi.User> users = new HashMap<>();
-    private static ChatManager instance;
+    private TdApi.Chat currentChat;
+    private TdApi.User currentUser;
+    private TdApi.UserFullInfo selectedUserFullInfo;
+
     private BiConsumer<TdApi.Chat, Integer> onNewChat;
     private Consumer<TdApi.Chat> onRemoveChat;
     private Consumer<TdApi.Chat> onChatPhotoChange;
@@ -31,8 +36,7 @@ public class ChatManager {
     private Consumer<TdApi.User> onUserPhotoChange;
     private Runnable onCurrentUserChange;
     private Runnable onCurrentUserPhotoChange;
-    private TdApi.Chat currentChat;
-    private TdApi.User currentUser;
+    private Runnable onSelectedUserFullInfoChange;
 
     private ChatManager() {
     }
@@ -115,14 +119,6 @@ public class ChatManager {
         }
     }
 
-    public void setOnNewChat(BiConsumer<TdApi.Chat, Integer> fun) {
-        onNewChat = fun;
-    }
-
-    public void setOnRemoveChat(Consumer<TdApi.Chat> fun) {
-        onRemoveChat = fun;
-    }
-
     public List<TdApi.Chat> getChats() {
         return new LinkedList<>(chats);
     }
@@ -131,48 +127,12 @@ public class ChatManager {
         chats.clear();
     }
 
-    public void setOnChatPhotoChange(Consumer<TdApi.Chat> fun) {
-        onChatPhotoChange = fun;
-    }
-
-    public void setOnChatLastMessageChange(Consumer<TdApi.Chat> fun) {
-        onChatLastMessageChange = fun;
-    }
-
-    public void setOnNewMessage(Consumer<TdApi.Message> fun) {
-        onNewMessage = fun;
-    }
-
-    public void setOnNewMessages(Consumer<TdApi.Message[]> fun) {
-        onNewMessages = fun;
-    }
-
-    public void setOnMessageUpdate(Consumer<TdApi.Message> fun) {
-        onMessageUpdate = fun;
-    }
-
     public List<TdApi.Message> getMessages() {
         return new ArrayList<>(messages);
     }
 
     public void clearMessages() {
         messages.clear();
-    }
-
-    public void setOnNewUser(Consumer<TdApi.User> fun) {
-        onNewUser = fun;
-    }
-
-    public void setOnUserPhotoChange(Consumer<TdApi.User> fun) {
-        onUserPhotoChange = fun;
-    }
-
-    public void setOnCurrentUserChange(Runnable fun) {
-        onCurrentUserChange = fun;
-    }
-
-    public void setOnCurrentUserPhotoChange(Runnable fun) {
-        onCurrentUserPhotoChange = fun;
     }
 
     public Map<Long, TdApi.User> getUsers() {
@@ -200,5 +160,65 @@ public class ChatManager {
 
     public TdApi.User getCurrentUser() {
         return currentUser;
+    }
+
+    public void setSelectedUserFullInfo(TdApi.UserFullInfo userFullInfo) {
+        selectedUserFullInfo = userFullInfo;
+        if (onSelectedUserFullInfoChange != null) {
+            onSelectedUserFullInfoChange.run();
+        }
+    }
+
+    public TdApi.UserFullInfo getSelectedUserFullInfo() {
+        return selectedUserFullInfo;
+    }
+
+
+    public void setOnNewChat(BiConsumer<TdApi.Chat, Integer> fun) {
+        onNewChat = fun;
+    }
+
+    public void setOnRemoveChat(Consumer<TdApi.Chat> fun) {
+        onRemoveChat = fun;
+    }
+
+    public void setOnChatPhotoChange(Consumer<TdApi.Chat> fun) {
+        onChatPhotoChange = fun;
+    }
+
+    public void setOnChatLastMessageChange(Consumer<TdApi.Chat> fun) {
+        onChatLastMessageChange = fun;
+    }
+
+    public void setOnNewMessage(Consumer<TdApi.Message> fun) {
+        onNewMessage = fun;
+    }
+
+    public void setOnNewMessages(Consumer<TdApi.Message[]> fun) {
+        onNewMessages = fun;
+    }
+
+    public void setOnMessageUpdate(Consumer<TdApi.Message> fun) {
+        onMessageUpdate = fun;
+    }
+
+    public void setOnNewUser(Consumer<TdApi.User> fun) {
+        onNewUser = fun;
+    }
+
+    public void setOnUserPhotoChange(Consumer<TdApi.User> fun) {
+        onUserPhotoChange = fun;
+    }
+
+    public void setOnCurrentUserChange(Runnable fun) {
+        onCurrentUserChange = fun;
+    }
+
+    public void setOnCurrentUserPhotoChange(Runnable fun) {
+        onCurrentUserPhotoChange = fun;
+    }
+
+    public void setOnSelectedUserFullInfoChange(Runnable fun) {
+        onSelectedUserFullInfoChange = fun;
     }
 }

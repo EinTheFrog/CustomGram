@@ -46,6 +46,8 @@ public final class Example {
     private static final SentMessageHandler sentMessageHandler = new SentMessageHandler();
     private static final Client.ResultHandler defaultHandler = new DefaultHandler();
     private static final MessagePhotoHandler messagePhotoHandler = new MessagePhotoHandler();
+    private static final GetMeHandler getMeHandler = new GetMeHandler();
+    private static final UserFullInfoHandler userFullInfoHandler = new UserFullInfoHandler();
 
     private static volatile boolean havePhoneNumber = false;
     private static final Lock phoneNumberLock = new ReentrantLock();
@@ -249,7 +251,7 @@ public final class Example {
     }
 
     public static void executeGetMe() {
-        client.send(new TdApi.GetMe(), new GetMeHandler());
+        client.send(new TdApi.GetMe(), getMeHandler);
     }
 
     public static void executeLogOut() {
@@ -401,6 +403,19 @@ public final class Example {
             TdApi.User user = (TdApi.User) object;
             chatManager.setCurrentUser(user);
             saveUser(user);
+            client.send(new TdApi.GetUserFullInfo(user.id), userFullInfoHandler);
+        }
+    }
+
+    private static class UserFullInfoHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            if (object.getConstructor() != TdApi.UserFullInfo.CONSTRUCTOR) {
+                Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+                return;
+            }
+            TdApi.UserFullInfo userFullInfo = (TdApi.UserFullInfo) object;
+            chatManager.setSelectedUserFullInfo(userFullInfo);
         }
     }
 

@@ -28,17 +28,26 @@ public class UserInfoFragment extends Fragment {
         binding = UserInfoFragmentBinding.inflate(getLayoutInflater());
 
         ChatManager chatManager = ChatManager.getInstance();
-        chatManager.setOnCurrentUserChange(this::onNewUser);
-        chatManager.setOnCurrentUserPhotoChange(this::updateUserPhoto);
+        chatManager.setOnCurrentUserChange(this::updateUserInfo);
+        chatManager.setOnCurrentUserPhotoChange(this::updateUserInfo);
+        chatManager.setOnSelectedUserFullInfoChange(this::updateUserFullInfo);
 
-        TdApi.User user = ChatManager.getInstance().getCurrentUser();
+        TdApi.User user = chatManager.getCurrentUser();
         if (user == null) return binding.getRoot();
-        binding.userName.setText(user.firstName);
-        setPhoto(user, binding);
+        setUserInfo(user);
+
+        TdApi.UserFullInfo userFullInfo = chatManager.getSelectedUserFullInfo();
+        if (userFullInfo == null) return binding.getRoot();
+        setUserFullInfo(userFullInfo);
+
         return binding.getRoot();
     }
 
-    private void setPhoto(TdApi.User user, UserInfoFragmentBinding binding) {
+    private void setUserInfo(TdApi.User user) {
+        binding.userName.setText(user.firstName + " " + user.lastName);
+        binding.userPhoneNumber.setText(user.phoneNumber);
+        binding.userNickname.setText("@" + user.username);
+
         if (user.profilePhoto != null && !user.profilePhoto.small.local.path.equals("")) {
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(user.profilePhoto.small.local.path, bmOptions);
@@ -56,14 +65,17 @@ public class UserInfoFragment extends Fragment {
         }
     }
 
-    private void onNewUser() {
-        TdApi.User user = ChatManager.getInstance().getCurrentUser();
-        binding.userName.setText(user.firstName);
-        setPhoto(user, binding);
+    private void setUserFullInfo(TdApi.UserFullInfo userFullInfo) {
+        binding.userBio.setText(userFullInfo.bio);
     }
 
-    private void updateUserPhoto() {
+    private void updateUserInfo() {
         TdApi.User user = ChatManager.getInstance().getCurrentUser();
-        setPhoto(user, binding);
+        setUserInfo(user);
+    }
+
+    private void updateUserFullInfo() {
+        TdApi.UserFullInfo userFullInfo = ChatManager.getInstance().getSelectedUserFullInfo();
+        setUserFullInfo(userFullInfo);
     }
 }

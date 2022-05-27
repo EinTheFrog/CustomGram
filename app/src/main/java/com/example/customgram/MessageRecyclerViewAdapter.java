@@ -70,6 +70,7 @@ public class MessageRecyclerViewAdapter
     }
 
     private void setMessageText(TdApi.Message message, ViewHolder holder) {
+        holder.messageText.setVisibility(View.VISIBLE);
         int contentConstructor = message.content.getConstructor();
         if (contentConstructor == TdApi.MessageText.CONSTRUCTOR) {
             TdApi.MessageText messageText = (TdApi.MessageText) message.content;

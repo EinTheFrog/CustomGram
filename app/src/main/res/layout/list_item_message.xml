@@ -28,9 +28,9 @@
 
         <ImageView
             android:id="@+id/message_photo"
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxWidth="250dp"
+            android:maxWidth="300dp"
             android:minWidth="50dp"
             android:adjustViewBounds="true"
             app:layout_constraintLeft_toLeftOf="parent"
