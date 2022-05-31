@@ -6,13 +6,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,6 +23,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.customgram.databinding.MessageListFragmentBinding;
@@ -105,6 +110,15 @@ public class MessageListFragment extends Fragment {
                 false
         );
 
+        activity.setSupportActionBar(binding.customToolbar);
+
+        NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
+        AppBarConfiguration.Builder appBarConfBuilder =
+                new AppBarConfiguration.Builder(navController.getGraph());
+        AppBarConfiguration appBarConfiguration = appBarConfBuilder.build();
+        NavigationUI.setupWithNavController(binding.customToolbar, navController, appBarConfiguration);
+        setHasOptionsMenu(true);
+
         Context context = binding.getRoot().getContext();
         LinearLayoutManager llm = new LinearLayoutManager(context);
         llm.setReverseLayout(true);
@@ -138,6 +152,12 @@ public class MessageListFragment extends Fragment {
 
         chatManager.clearMessages();
         Example.clearMessages();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        activity.getMenuInflater().inflate(R.menu.messages_optins_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     private void tryToLoadImage() {

@@ -4,17 +4,20 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.customgram.databinding.ChatListFragmentBinding;
 
@@ -32,6 +35,8 @@ public class ChatListFragment extends Fragment {
     private Map<Integer, TdApi.Chat> chatsBuffer;
     private ChatRecyclerViewAdapter mChatRecyclerAdapter;
     private AppCompatActivity activity;
+    private ChatListFragmentBinding binding;
+    private NavController navController;
 
     public ChatListFragment() {
         super(R.layout.chat_list_fragment);
@@ -69,7 +74,7 @@ public class ChatListFragment extends Fragment {
         chatManager.setOnChatLastMessageChange(this::updateChatLastMessage);
         mChatRecyclerAdapter.setOnChatClicked(this::openMessages);
 
-        ChatListFragmentBinding binding = ChatListFragmentBinding.inflate(
+        binding = ChatListFragmentBinding.inflate(
                 inflater,
                 container,
                 false
@@ -78,7 +83,35 @@ public class ChatListFragment extends Fragment {
         binding.recyclerChats.setLayoutManager(new LinearLayoutManager(context));
         binding.recyclerChats.setAdapter(mChatRecyclerAdapter);
 
+        activity.setSupportActionBar(binding.customToolbar);
+
+        navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
+        AppBarConfiguration.Builder appBarConfBuilder =
+                new AppBarConfiguration.Builder(navController.getGraph());
+        AppBarConfiguration appBarConfiguration = appBarConfBuilder
+                .setOpenableLayout(binding.getRoot())
+                .build();
+        NavigationUI.setupWithNavController(binding.customToolbar, navController, appBarConfiguration);
+        setHasOptionsMenu(true);
+
         return binding.getRoot();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        activity.getMenuInflater().inflate(R.menu.chats_options_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.item_logout) {
+            binding.getRoot().closeDrawer(GravityCompat.START);
+            Example.executeLogOut();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void updateNewChat(TdApi.Chat chat, int pos) {

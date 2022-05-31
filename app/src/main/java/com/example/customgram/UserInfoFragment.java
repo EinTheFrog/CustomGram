@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.customgram.databinding.ToolbarChatInfoFragmentBinding;
 import com.example.customgram.databinding.UserInfoFragmentBinding;
 
 import org.drinkless.td.libcore.telegram.TdApi;
