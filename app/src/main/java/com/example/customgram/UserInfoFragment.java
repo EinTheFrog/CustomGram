@@ -5,11 +5,20 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.example.customgram.databinding.UserInfoFragmentBinding;
 
@@ -17,6 +26,13 @@ import org.drinkless.td.libcore.telegram.TdApi;
 
 public class UserInfoFragment extends Fragment {
     UserInfoFragmentBinding binding;
+    private AppCompatActivity activity;
+
+    @Override
+    public void onCreate(Bundle savedInstance) {
+        super.onCreate(savedInstance);
+        activity = (AppCompatActivity) getActivity();
+    }
 
     @Override
     public View onCreateView(
@@ -26,20 +42,54 @@ public class UserInfoFragment extends Fragment {
     ) {
         binding = UserInfoFragmentBinding.inflate(getLayoutInflater());
 
+        activity.setSupportActionBar(binding.customToolbar);
+
+        NavController navController = Navigation.findNavController(
+                activity,
+                R.id.nav_host_fragment
+        );
+        AppBarConfiguration.Builder appBarConfBuilder =
+                new AppBarConfiguration.Builder(navController.getGraph());
+        AppBarConfiguration appBarConfiguration = appBarConfBuilder.build();
+        NavigationUI.setupWithNavController(
+                binding.customToolbar,
+                navController,
+                appBarConfiguration
+        );
+        setHasOptionsMenu(true);
+
         ChatManager chatManager = ChatManager.getInstance();
         chatManager.setOnCurrentUserChange(this::updateUserInfo);
         chatManager.setOnCurrentUserPhotoChange(this::updateUserInfo);
         chatManager.setOnSelectedUserFullInfoChange(this::updateUserFullInfo);
 
         TdApi.User user = chatManager.getCurrentUser();
-        if (user == null) return binding.getRoot();
-        setUserInfo(user);
+        if (user != null) {
+            setUserInfo(user);
+        }
 
         TdApi.UserFullInfo userFullInfo = chatManager.getSelectedUserFullInfo();
-        if (userFullInfo == null) return binding.getRoot();
-        setUserFullInfo(userFullInfo);
+        if (userFullInfo != null) {
+            setUserFullInfo(userFullInfo);
+        }
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        activity.getMenuInflater().inflate(R.menu.chats_options_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.item_logout) {
+            Example.executeLogOut();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void setUserInfo(TdApi.User user) {

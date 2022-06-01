@@ -33,10 +33,8 @@ import com.example.customgram.databinding.MessageListFragmentBinding;
 
 import org.drinkless.td.libcore.telegram.TdApi;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,11 +110,18 @@ public class MessageListFragment extends Fragment {
 
         activity.setSupportActionBar(binding.customToolbar);
 
-        NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
+        NavController navController = Navigation.findNavController(
+                activity,
+                R.id.nav_host_fragment
+        );
         AppBarConfiguration.Builder appBarConfBuilder =
                 new AppBarConfiguration.Builder(navController.getGraph());
         AppBarConfiguration appBarConfiguration = appBarConfBuilder.build();
-        NavigationUI.setupWithNavController(binding.customToolbar, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(
+                binding.customToolbar,
+                navController,
+                appBarConfiguration
+        );
         setHasOptionsMenu(true);
 
         Context context = binding.getRoot().getContext();

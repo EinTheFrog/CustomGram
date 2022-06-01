@@ -36,5 +36,9 @@
     <fragment
         android:id="@+id/user_info_fragment"
         android:name="com.example.customgram.UserInfoFragment"
-        tools:layout="@layout/user_info_fragment" />
+        tools:layout="@layout/user_info_fragment">
+        <action
+            android:id="@+id/action_user_info_fragment_to_chats_fragment"
+            app:popUpTo="@id/chats_fragment" />
+    </fragment>
 </navigation>

@@ -2,186 +2,219 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:layout_width="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            style="@style/AppTheme.Toolbar"
+            android:elevation="4dp"
+            android:id="@+id/custom_toolbar"
+            android:layout_height="60dp"
+            android:layout_width="match_parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <fragment
+                android:id="@+id/toolbar_fragment"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:name="com.example.customgram.ToolbarDefaultFragment" />
+        </androidx.appcompat.widget.Toolbar>
 
         <ImageView
             android:id="@+id/user_img"
-            android:layout_width="0dp"
             android:layout_height="400dp"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/custom_toolbar" />
+
         <TextView
             android:id="@+id/user_alt_img"
-            android:text="AA"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="200sp"
+            android:layout_width="wrap_content"
+            android:text="AA"
             android:textAlignment="center"
+            android:textSize="200sp"
+            app:layout_constraintBottom_toBottomOf="@id/user_img"
             app:layout_constraintLeft_toLeftOf="@id/user_img"
             app:layout_constraintRight_toRightOf="@id/user_img"
-            app:layout_constraintTop_toTopOf="@id/user_img"
-            app:layout_constraintBottom_toBottomOf="@id/user_img" />
+            app:layout_constraintTop_toTopOf="@id/user_img" />
+
         <TextView
             android:id="@+id/user_name"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_img" />
+
         <TextView
             android:id="@+id/user_phone_number"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_name" />
+
         <TextView
             android:id="@+id/user_nickname"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_phone_number" />
+
         <TextView
             android:id="@+id/user_bio"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
             android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_nickname" />
+
         <TextView
             android:id="@+id/user_settings_text"
-            android:text="@string/settings"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/settings"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_bio" />
+
         <Button
             android:id="@+id/user_settings_notifications"
-            android:text="@string/notifications_and_sounds"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/notifications_and_sounds"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_text" />
+
         <Button
             android:id="@+id/user_settings_privacy"
-            android:text="@string/privacy_and_security"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/privacy_and_security"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_notifications" />
+
         <Button
             android:id="@+id/user_settings_storage"
-            android:text="@string/data_and_storage"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/data_and_storage"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_privacy" />
+
         <Button
             android:id="@+id/user_settings_chat"
-            android:text="@string/chat_settings"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/chat_settings"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_storage" />
+
         <Button
             android:id="@+id/user_settings_folders"
-            android:text="@string/chat_folders"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/chat_folders"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_chat" />
+
         <Button
             android:id="@+id/user_settings_devices"
-            android:text="@string/devices"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/devices"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_folders" />
+
         <Button
             android:id="@+id/user_settings_language"
-            android:text="@string/language"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/language"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_devices" />
+
         <TextView
             android:id="@+id/user_help_text"
-            android:text="@string/help"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/help"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_settings_language" />
+
         <Button
             android:id="@+id/user_help_ask"
-            android:text="@string/ask_a_question"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/ask_a_question"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_help_text" />
+
         <Button
             android:id="@+id/user_help_faq"
-            android:text="@string/telegram_faq"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/telegram_faq"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_help_ask" />
+
         <Button
             android:id="@+id/user_help_privacy"
-            android:text="@string/privacy_policy"
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceHeadline6"
             android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:text="@string/privacy_policy"
+            android:textAppearance="?textAppearanceHeadline6"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_help_faq" />

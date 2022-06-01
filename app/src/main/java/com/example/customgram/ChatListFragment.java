@@ -4,14 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -91,27 +87,13 @@ public class ChatListFragment extends Fragment {
         AppBarConfiguration appBarConfiguration = appBarConfBuilder
                 .setOpenableLayout(binding.getRoot())
                 .build();
-        NavigationUI.setupWithNavController(binding.customToolbar, navController, appBarConfiguration);
-        setHasOptionsMenu(true);
+        NavigationUI.setupWithNavController(
+                binding.customToolbar,
+                navController,
+                appBarConfiguration
+        );
 
         return binding.getRoot();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        activity.getMenuInflater().inflate(R.menu.chats_options_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.item_logout) {
-            binding.getRoot().closeDrawer(GravityCompat.START);
-            Example.executeLogOut();
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
     }
 
     private void updateNewChat(TdApi.Chat chat, int pos) {
