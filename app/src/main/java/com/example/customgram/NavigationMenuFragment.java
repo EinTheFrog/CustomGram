@@ -22,11 +22,9 @@ public class NavigationMenuFragment extends Fragment {
                 = NavigationMenuFragmentBinding.inflate(getLayoutInflater());
 
         ChatsActivity chatsActivity = (ChatsActivity) getActivity();
-        NavController navController = Navigation.findNavController(chatsActivity, R.id.nav_host_fragment);
-
-        binding.buttonUserInfo.setOnClickListener(
-            view -> navController.navigate(R.id.action_chats_fragment_to_user_info_fragment)
-        );
+        if (chatsActivity != null) {
+            binding.buttonUserInfo.setOnClickListener(view -> chatsActivity.openUserInfo());
+        }
 
         return binding.getRoot();
     }

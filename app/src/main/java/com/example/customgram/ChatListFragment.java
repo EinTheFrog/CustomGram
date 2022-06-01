@@ -30,7 +30,7 @@ public class ChatListFragment extends Fragment {
     private List<TdApi.Chat> chats;
     private Map<Integer, TdApi.Chat> chatsBuffer;
     private ChatRecyclerViewAdapter mChatRecyclerAdapter;
-    private AppCompatActivity activity;
+    private ChatsActivity activity;
     private ChatListFragmentBinding binding;
     private NavController navController;
 
@@ -41,7 +41,7 @@ public class ChatListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
-        activity = (AppCompatActivity) getActivity();
+        activity = (ChatsActivity) getActivity();
     }
 
     @Override
@@ -129,9 +129,6 @@ public class ChatListFragment extends Fragment {
 
     private void openMessages(int pos) {
         TdApi.Chat chat = chats.get(pos);
-        ChatsActivity activity = (ChatsActivity) getActivity();
-        if (activity != null) {
-            activity.openMessages(chat);
-        }
+        activity.openMessages(chat);
     }
 }

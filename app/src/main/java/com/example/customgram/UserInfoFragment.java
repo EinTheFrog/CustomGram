@@ -26,12 +26,12 @@ import org.drinkless.td.libcore.telegram.TdApi;
 
 public class UserInfoFragment extends Fragment {
     UserInfoFragmentBinding binding;
-    private AppCompatActivity activity;
+    private ChatsActivity activity;
 
     @Override
     public void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
-        activity = (AppCompatActivity) getActivity();
+        activity = (ChatsActivity) getActivity();
     }
 
     @Override
@@ -85,7 +85,7 @@ public class UserInfoFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.item_logout) {
-            Example.executeLogOut();
+            activity.logOut();
             return true;
         } else {
             return super.onOptionsItemSelected(item);

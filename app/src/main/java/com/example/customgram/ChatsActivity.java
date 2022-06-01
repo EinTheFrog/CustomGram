@@ -18,6 +18,7 @@ public class ChatsActivity extends AppCompatActivity {
 
     private ActivityChatsBinding binding;
     private NavController navController;
+    private CustomApplication customApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +31,10 @@ public class ChatsActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
 
         String dbDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/tdlib";
-        CustomApplication customApp = (CustomApplication) getApplication();
+        customApp = (CustomApplication) getApplication();
         Example.setChatViewManager(ChatManager.getInstance());
         Example.authorizationStateData.observe(this, this::onStateChange);
-        startTdLoop(dbDir, customApp.executor);
+        startTdLoop(dbDir);
     }
 
     @Override
@@ -41,16 +42,26 @@ public class ChatsActivity extends AppCompatActivity {
         return navController.navigateUp() || super.onSupportNavigateUp();
     }
 
+    public void openUserInfo() {
+        customApp.executor.execute(Example::executeGetMe);
+        navController.navigate(R.id.action_chats_fragment_to_user_info_fragment);
+    }
+
     public void openMessages(TdApi.Chat chat) {
-        Example.executeGetChatHistory(chat.id);
+        customApp.executor.execute(() ->  Example.executeGetChatHistory(chat.id));
         ChatManager.getInstance().setCurrentChat(chat);
 
         navController.navigate(R.id.action_chats_fragment_to_messages_fragment);
     }
 
-    private void startTdLoop(String dbDir, ExecutorService executor) {
+    public void logOut() {
+        navController.navigate(R.id.action_user_info_fragment_to_chats_fragment);
+        customApp.executor.execute(Example::executeLogOut);
+    }
+
+    private void startTdLoop(String dbDir) {
         String logFileName = "/tdlib.log";
-        executor.execute(() -> {
+        customApp.executor.execute(() -> {
             try {
                 int apiId = getResources().getInteger(R.integer.api_id);
                 String apiHash = getResources().getString(R.string.api_hash);
@@ -58,7 +69,7 @@ public class ChatsActivity extends AppCompatActivity {
                 String authenticationCode = getResources().getString(R.string.authentication_code);
                 Example.main(dbDir, logFileName, apiId, apiHash, systemLanguageCode, authenticationCode);
             } catch (InterruptedException e) {
-                Log.e("CHATS_DEBUG", e.getMessage());
+                Log.e(TAG, e.getMessage());
             }
         });
     }
