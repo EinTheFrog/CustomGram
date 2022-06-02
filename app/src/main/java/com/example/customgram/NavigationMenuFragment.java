@@ -20,12 +20,6 @@ public class NavigationMenuFragment extends Fragment {
     ) {
         NavigationMenuFragmentBinding binding
                 = NavigationMenuFragmentBinding.inflate(getLayoutInflater());
-
-        ChatsActivity chatsActivity = (ChatsActivity) getActivity();
-        if (chatsActivity != null) {
-            binding.buttonUserInfo.setOnClickListener(view -> chatsActivity.openUserInfo());
-        }
-
         return binding.getRoot();
     }
 }

@@ -2,6 +2,9 @@ package com.example.customgram;
 
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import org.drinkless.td.libcore.telegram.TdApi;
 
 import java.util.ArrayList;
@@ -22,8 +25,8 @@ public class ChatManager {
     private final List<TdApi.Message> messages = new ArrayList<>();
     private final Map<Long, TdApi.User> users = new HashMap<>();
     private TdApi.Chat currentChat;
-    private TdApi.User currentUser;
-    private TdApi.UserFullInfo selectedUserFullInfo;
+    private final MutableLiveData<TdApi.User> currentUser = new MutableLiveData<>();
+    private final MutableLiveData<TdApi.UserFullInfo> selectedUserFullInfo = new MutableLiveData<>();
 
     private BiConsumer<TdApi.Chat, Integer> onNewChat;
     private Consumer<TdApi.Chat> onRemoveChat;
@@ -34,9 +37,6 @@ public class ChatManager {
     private Consumer<TdApi.Message> onMessageUpdate;
     private Consumer<TdApi.User> onNewUser;
     private Consumer<TdApi.User> onUserPhotoChange;
-    private Runnable onCurrentUserChange;
-    private Runnable onCurrentUserPhotoChange;
-    private Runnable onSelectedUserFullInfoChange;
 
     private ChatManager() {
     }
@@ -113,8 +113,8 @@ public class ChatManager {
     public void addUserPhoto(TdApi.User user) {
         if (onUserPhotoChange != null) {
             onUserPhotoChange.accept(user);
-            if (user.id == currentChat.id && onCurrentUserPhotoChange != null) {
-                onCurrentUserPhotoChange.run();
+            if (user.id == currentChat.id) {
+                currentUser.postValue(user);
             }
         }
     }
@@ -152,27 +152,12 @@ public class ChatManager {
     }
 
     public void setCurrentUser(TdApi.User user) {
-        if (onCurrentUserChange != null) {
-            onCurrentUserChange.run();
-        }
-        currentUser = user;
-    }
-
-    public TdApi.User getCurrentUser() {
-        return currentUser;
+        currentUser.postValue(user);
     }
 
     public void setSelectedUserFullInfo(TdApi.UserFullInfo userFullInfo) {
-        selectedUserFullInfo = userFullInfo;
-        if (onSelectedUserFullInfoChange != null) {
-            onSelectedUserFullInfoChange.run();
-        }
+        selectedUserFullInfo.postValue(userFullInfo);
     }
-
-    public TdApi.UserFullInfo getSelectedUserFullInfo() {
-        return selectedUserFullInfo;
-    }
-
 
     public void setOnNewChat(BiConsumer<TdApi.Chat, Integer> fun) {
         onNewChat = fun;
@@ -210,15 +195,11 @@ public class ChatManager {
         onUserPhotoChange = fun;
     }
 
-    public void setOnCurrentUserChange(Runnable fun) {
-        onCurrentUserChange = fun;
+    public LiveData<TdApi.User> getCurrentUser() {
+        return currentUser;
     }
 
-    public void setOnCurrentUserPhotoChange(Runnable fun) {
-        onCurrentUserPhotoChange = fun;
-    }
-
-    public void setOnSelectedUserFullInfoChange(Runnable fun) {
-        onSelectedUserFullInfoChange = fun;
+    public LiveData<TdApi.UserFullInfo> getSelectedUserFullInfo() {
+        return selectedUserFullInfo;
     }
 }

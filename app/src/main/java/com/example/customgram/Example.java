@@ -254,6 +254,10 @@ public final class Example {
         client.send(new TdApi.GetMe(), getMeHandler);
     }
 
+    public static void executeGetUserFullInfo(TdApi.User user) {
+        client.send(new TdApi.GetUserFullInfo(user.id), userFullInfoHandler);
+    }
+
     public static void executeLogOut() {
         chats.clear();
         mainChatList.clear();
@@ -403,7 +407,6 @@ public final class Example {
             TdApi.User user = (TdApi.User) object;
             chatManager.setCurrentUser(user);
             saveUser(user);
-            client.send(new TdApi.GetUserFullInfo(user.id), userFullInfoHandler);
         }
     }
 

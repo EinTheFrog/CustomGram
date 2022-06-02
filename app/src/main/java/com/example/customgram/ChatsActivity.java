@@ -43,7 +43,8 @@ public class ChatsActivity extends AppCompatActivity {
     }
 
     public void openUserInfo() {
-        customApp.executor.execute(Example::executeGetMe);
+        TdApi.User currentUser = ChatManager.getInstance().getCurrentUser().getValue();
+        customApp.executor.execute(() -> Example.executeGetUserFullInfo(currentUser));
         navController.navigate(R.id.action_chats_fragment_to_user_info_fragment);
     }
 
@@ -77,7 +78,8 @@ public class ChatsActivity extends AppCompatActivity {
     private void onStateChange(TdApi.AuthorizationState newState) {
         switch (newState.getConstructor()) {
             case TdApi.AuthorizationStateReady.CONSTRUCTOR: {
-                Example.executeGetChats(20);
+                customApp.executor.execute(Example::executeGetMe);
+                customApp.executor.execute(() -> Example.executeGetChats(20));
                 break;
             }
             case TdApi.AuthorizationStateWaitPhoneNumber.CONSTRUCTOR: {

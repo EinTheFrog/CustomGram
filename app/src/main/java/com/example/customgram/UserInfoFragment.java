@@ -11,9 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -59,19 +57,8 @@ public class UserInfoFragment extends Fragment {
         setHasOptionsMenu(true);
 
         ChatManager chatManager = ChatManager.getInstance();
-        chatManager.setOnCurrentUserChange(this::updateUserInfo);
-        chatManager.setOnCurrentUserPhotoChange(this::updateUserInfo);
-        chatManager.setOnSelectedUserFullInfoChange(this::updateUserFullInfo);
-
-        TdApi.User user = chatManager.getCurrentUser();
-        if (user != null) {
-            setUserInfo(user);
-        }
-
-        TdApi.UserFullInfo userFullInfo = chatManager.getSelectedUserFullInfo();
-        if (userFullInfo != null) {
-            setUserFullInfo(userFullInfo);
-        }
+        chatManager.getCurrentUser().observe(activity, this::setUserInfo);
+        chatManager.getSelectedUserFullInfo().observe(activity, this::setUserFullInfo);
 
         return binding.getRoot();
     }
@@ -93,38 +80,18 @@ public class UserInfoFragment extends Fragment {
     }
 
     private void setUserInfo(TdApi.User user) {
-        binding.userName.setText(user.firstName + " " + user.lastName);
+        if (user == null) return;
+        String userFullName = user.firstName + " " + user.lastName;
+        binding.userName.setText(userFullName);
         binding.userPhoneNumber.setText(user.phoneNumber);
         binding.userNickname.setText("@" + user.username);
 
-        if (user.profilePhoto != null && !user.profilePhoto.small.local.path.equals("")) {
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            Bitmap bitmap = BitmapFactory.decodeFile(user.profilePhoto.small.local.path, bmOptions);
-            binding.userImg.setImageBitmap(bitmap);
-            binding.userAltImg.setText("");
-        } else {
-            binding.userImg.setImageDrawable(null);
-            Context photoContext = binding.userImg.getContext();
-            binding.userImg.setBackgroundColor(
-                    ContextCompat.getColor(photoContext, R.color.pink)
-            );
-            binding.userAltImg.setText(
-                    ChatAltPhotoHelper.getTitleInitials(user.firstName + " " + user.lastName)
-            );
-        }
+        String photoPath = user.profilePhoto == null ? "" : user.profilePhoto.small.local.path;
+        ProfilePhotoHelper.setPhoto(photoPath, userFullName, binding.userImg, binding.altUserImg);
     }
 
     private void setUserFullInfo(TdApi.UserFullInfo userFullInfo) {
+        if (userFullInfo == null) return;
         binding.userBio.setText(userFullInfo.bio);
-    }
-
-    private void updateUserInfo() {
-        TdApi.User user = ChatManager.getInstance().getCurrentUser();
-        setUserInfo(user);
-    }
-
-    private void updateUserFullInfo() {
-        TdApi.UserFullInfo userFullInfo = ChatManager.getInstance().getSelectedUserFullInfo();
-        setUserFullInfo(userFullInfo);
     }
 }

@@ -3,8 +3,6 @@ package com.example.customgram;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,19 +63,8 @@ public class ChatRecyclerViewAdapter extends
     }
 
     private void setChatPhoto(TdApi.Chat chat, ViewHolder holder) {
-        holder.chatPhoto.setImageDrawable(null);
-        holder.altChatPhotoText.setText("");
-        if (chat.photo != null && !chat.photo.small.local.path.equals("")) {
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            Bitmap bitmap = BitmapFactory.decodeFile(chat.photo.small.local.path, bmOptions);
-            holder.chatPhoto.setImageBitmap(bitmap);
-        } else {
-            Context photoContext = holder.chatPhoto.getContext();
-            holder.chatPhoto.setBackgroundColor(
-                    ContextCompat.getColor(photoContext, R.color.pink)
-            );
-            holder.altChatPhotoText.setText(ChatAltPhotoHelper.getTitleInitials(chat.title));
-        }
+        String photoPath = chat.photo == null ? "" : chat.photo.small.local.path;
+        ProfilePhotoHelper.setPhoto(photoPath, chat.title, holder.chatPhoto, holder.altChatPhotoText);
     }
 
     public void setOnChatClicked(Consumer<Integer> fun) {
