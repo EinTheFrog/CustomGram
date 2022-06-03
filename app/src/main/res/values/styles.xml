@@ -7,6 +7,7 @@
         <item name="android:textColor">?colorAccent</item>
     </style>
     <style name="AppTheme.Toolbar">
+        <item name="contentScrim">?colorPrimaryDark</item>
         <item name="android:background">?colorPrimaryDark</item>
         <item name="android:textSize">22sp</item>
     </style>
@@ -15,6 +16,12 @@
         <item name="android:background">@drawable/bg_message_shell</item>
     </style>
 
+    <style name="TextAppearance.Customgram.Headline1"
+        parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="android:textSize">40sp</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+    </style>
     <style name="TextAppearance.Customgram.Headline6"
         parent="TextAppearance.MaterialComponents.Headline6">
         <item name="android:textSize">20sp</item>

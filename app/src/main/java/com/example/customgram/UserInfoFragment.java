@@ -19,6 +19,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.customgram.databinding.UserInfoFragmentBinding;
+import com.google.android.material.appbar.AppBarLayout;
 
 import org.drinkless.td.libcore.telegram.TdApi;
 
@@ -55,6 +56,17 @@ public class UserInfoFragment extends Fragment {
                 appBarConfiguration
         );
         setHasOptionsMenu(true);
+
+        binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
+            if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
+                // If collapsed, then do this
+                binding.toolbarUserInfoFragment.setVisibility(View.VISIBLE);
+                binding.userName.setVisibility(View.GONE);
+            } else {
+                binding.toolbarUserInfoFragment.setVisibility(View.INVISIBLE);
+                binding.userName.setVisibility(View.VISIBLE);
+            }
+        });
 
         ChatManager chatManager = ChatManager.getInstance();
         chatManager.getCurrentUser().observe(activity, this::setUserInfo);
