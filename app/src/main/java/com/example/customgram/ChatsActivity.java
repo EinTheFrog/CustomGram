@@ -30,7 +30,7 @@ public class ChatsActivity extends AppCompatActivity {
         NavHostFragment navHostFragment = binding.navHostFragment.getFragment();
         navController = navHostFragment.getNavController();
 
-        String dbDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/tdlib";
+        String dbDir = getApplicationContext().getFilesDir().getAbsolutePath();
         customApp = (CustomApplication) getApplication();
         Example.setChatViewManager(ChatManager.getInstance());
         Example.authorizationStateData.observe(this, this::onStateChange);
@@ -42,11 +42,11 @@ public class ChatsActivity extends AppCompatActivity {
         return navController.navigateUp() || super.onSupportNavigateUp();
     }
 
-    public void openUserInfo() {
+/*    public void openUserInfo() {
         TdApi.User currentUser = ChatManager.getInstance().getCurrentUser().getValue();
         customApp.executor.execute(() -> Example.executeGetUserFullInfo(currentUser));
         navController.navigate(R.id.action_chats_fragment_to_user_info_fragment);
-    }
+    }*/
 
     public void openMessages(TdApi.Chat chat) {
         customApp.executor.execute(() ->  Example.executeGetChatHistory(chat.id));

@@ -1,17 +1,11 @@
 package com.example.customgram;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -19,7 +13,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.customgram.databinding.UserInfoFragmentBinding;
-import com.google.android.material.appbar.AppBarLayout;
 
 import org.drinkless.td.libcore.telegram.TdApi;
 
@@ -41,7 +34,14 @@ public class UserInfoFragment extends Fragment {
     ) {
         binding = UserInfoFragmentBinding.inflate(getLayoutInflater());
 
-        activity.setSupportActionBar(binding.customToolbar);
+        binding.customToolbar.inflateMenu(R.menu.user_info_options_menu);
+        binding.customToolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.item_logout) {
+                activity.logOut();
+                return true;
+            }
+            return false;
+        });
 
         NavController navController = Navigation.findNavController(
                 activity,
@@ -75,28 +75,13 @@ public class UserInfoFragment extends Fragment {
         return binding.getRoot();
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        activity.getMenuInflater().inflate(R.menu.chats_options_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.item_logout) {
-            activity.logOut();
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
     private void setUserInfo(TdApi.User user) {
         if (user == null) return;
         String userFullName = user.firstName + " " + user.lastName;
         binding.userName.setText(userFullName);
         binding.userPhoneNumber.setText(user.phoneNumber);
-        binding.userNickname.setText("@" + user.username);
+        String userNickname = "@" + user.username;
+        binding.userNickname.setText(userNickname);
 
         String photoPath = user.profilePhoto == null ? "" : user.profilePhoto.small.local.path;
         ProfilePhotoHelper.setPhoto(photoPath, userFullName, binding.userImg, binding.altUserImg);

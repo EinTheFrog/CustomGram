@@ -108,7 +108,8 @@ public class MessageListFragment extends Fragment {
                 false
         );
 
-        activity.setSupportActionBar(binding.customToolbar);
+        //activity.setSupportActionBar(binding.customToolbar);
+        binding.customToolbar.inflateMenu(R.menu.messages_optins_menu);
 
         NavController navController = Navigation.findNavController(
                 activity,
@@ -157,12 +158,6 @@ public class MessageListFragment extends Fragment {
 
         chatManager.clearMessages();
         Example.clearMessages();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        activity.getMenuInflater().inflate(R.menu.messages_optins_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     private void tryToLoadImage() {
@@ -224,6 +219,7 @@ public class MessageListFragment extends Fragment {
     private String getMessageSenderName(long userId) {
         if (!users.containsKey(userId)) return "";
         TdApi.User user = users.get(userId);
+        if (user == null) return "";
         return user.firstName + " " + user.lastName;
     }
 

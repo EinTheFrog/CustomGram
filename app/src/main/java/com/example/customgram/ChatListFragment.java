@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -78,8 +77,6 @@ public class ChatListFragment extends Fragment {
         Context context = binding.getRoot().getContext();
         binding.recyclerChats.setLayoutManager(new LinearLayoutManager(context));
         binding.recyclerChats.setAdapter(mChatRecyclerAdapter);
-
-        activity.setSupportActionBar(binding.customToolbar);
 
         navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
         AppBarConfiguration.Builder appBarConfBuilder =
