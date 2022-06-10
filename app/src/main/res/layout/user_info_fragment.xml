@@ -15,36 +15,18 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:expandedTitleGravity="bottom"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
-            <ImageView
-                android:id="@+id/user_img"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-            <TextView
-                android:id="@+id/alt_user_img"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textAlignment="center"
-                android:textSize="200sp" />
-            <TextView
-                android:id="@+id/user_name"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_margin="20dp"
-                android:textAppearance="?textAppearanceHeadline1"
-                android:layout_gravity="bottom" />
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:scrimAnimationDuration="0"
+            app:scrimVisibleHeightTrigger="0dp">
+            <include
+                android:id="@+id/expanded_user_info"
+                layout="@layout/expanded_toolbar_user_info" />
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/custom_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?actionBarSize"
                 android:elevation="4dp"
-                app:layout_collapseMode="pin">
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/toolbar_user_info_fragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:name="com.example.customgram.ToolbarUserInfoFragment" />
-            </androidx.appcompat.widget.Toolbar>
+                app:layout_collapseMode="pin" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
     <androidx.core.widget.NestedScrollView
