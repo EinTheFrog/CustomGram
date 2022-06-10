@@ -11,9 +11,7 @@
         android:id="@+id/toolbar_user_img"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:shapeAppearanceOverlay="@style/AppTheme.roundedImageViewRounded"
         app:strokeColor="@null"
-        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -32,7 +30,6 @@
         app:layout_constraintBottom_toBottomOf="@id/toolbar_user_img"/>
     <TextView
         android:id="@+id/toolbar_user_name"
-        style="@style/AppTheme.Toolbar"
         android:textAppearance="?textAppearanceHeadline1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

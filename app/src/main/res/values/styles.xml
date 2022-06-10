@@ -9,7 +9,7 @@
     <style name="AppTheme.Toolbar">
         <item name="contentScrim">?colorPrimaryDark</item>
         <item name="android:background">?colorPrimaryDark</item>
-        <item name="android:textSize">22sp</item>
+        <item name="android:textSize">20sp</item>
     </style>
     <style name="AppTheme.Message">
         <item name="android:padding">10dp</item>
