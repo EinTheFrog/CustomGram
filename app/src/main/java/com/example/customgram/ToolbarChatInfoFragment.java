@@ -43,6 +43,11 @@ public class ToolbarChatInfoFragment extends Fragment {
 
     private void setPhoto(TdApi.Chat chat, ToolbarChatInfoFragmentBinding binding) {
         String photoPath = chat.photo == null ? "" : chat.photo.small.local.path;
-        ProfilePhotoHelper.setPhoto(photoPath, chat.title, binding.toolbarChatImg, binding.toolbarAltChatImg);
+        ProfilePhotoHelper.setPhoto(
+                photoPath,
+                chat.title,
+                binding.toolbarChatPhoto,
+                binding.toolbarAltChatPhoto
+        );
     }
 }

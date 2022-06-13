@@ -35,7 +35,7 @@ public class UserInfoPreviewFragment extends Fragment {
     ) {
         binding = UserInfoPreviewFragmentBinding.inflate(getLayoutInflater());
         NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
-        binding.userImg.setOnClickListener(view -> openUserInfo(navController));
+        binding.userPhoto.setOnClickListener(view -> openUserInfo(navController));
 
         ChatManager.getInstance().getCurrentUser().observe(activity, this::setUserInfo);
 
@@ -49,7 +49,12 @@ public class UserInfoPreviewFragment extends Fragment {
         binding.userPhoneNumber.setText(user.phoneNumber);
 
         String photoPath = user.profilePhoto == null ? "" : user.profilePhoto.small.local.path;
-        ProfilePhotoHelper.setPhoto(photoPath, userFullName, binding.userImg, binding.altUserImg);
+        ProfilePhotoHelper.setPhoto(
+                photoPath,
+                userFullName,
+                binding.userPhoto,
+                binding.altUserPhoto
+        );
     }
 
     private void openUserInfo(NavController navController) {

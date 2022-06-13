@@ -69,8 +69,8 @@ public class MessageListFragment extends Fragment {
             result -> {
                 Intent intent = result.getData();
                 if (intent == null) return;
-                Uri imgUri = intent.getData();
-                copyPhotoFromGallery(imgUri, Example.getPhotosDir());
+                Uri imageUri = intent.getData();
+                copyPhotoFromGallery(imageUri, Example.getPhotosDir());
             }
     );
 

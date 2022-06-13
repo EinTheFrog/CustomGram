@@ -37,23 +37,23 @@ public class ProfilePhotoHelper {
 
     public static void setPhoto(
             String photoPath,
-            String altImageText,
+            String altPhotoText,
             ImageView profileImage,
-            TextView altImage
+            TextView altPhoto
     ) {
         if (!photoPath.equals("")) {
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(photoPath, bmOptions);
             profileImage.setImageBitmap(bitmap);
-            altImage.setText("");
+            altPhoto.setText("");
         } else {
             profileImage.setImageDrawable(null);
             Context photoContext = profileImage.getContext();
             profileImage.setBackgroundColor(
                     ContextCompat.getColor(photoContext, R.color.pink)
             );
-            altImage.setText(
-                    ProfilePhotoHelper.getTitleInitials(altImageText)
+            altPhoto.setText(
+                    ProfilePhotoHelper.getTitleInitials(altPhotoText)
             );
         }
     }

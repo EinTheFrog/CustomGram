@@ -1,15 +1,11 @@
 package com.example.customgram;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.drinkless.td.libcore.telegram.TdApi;
@@ -19,13 +15,13 @@ import java.util.function.Consumer;
 
 public class ChatRecyclerViewAdapter extends
         RecyclerView.Adapter<ChatRecyclerViewAdapter.ViewHolder> {
-    private static final String TAG = "RECYCLER";
+    private static final String TAG = "CHAT_RECYCLER";
 
-    private final List<TdApi.Chat> mChats;
+    private final List<TdApi.Chat> chats;
     private Consumer<Integer> onChatClicked;
 
     public ChatRecyclerViewAdapter(List<TdApi.Chat> chats) {
-        mChats = chats;
+        this.chats = chats;
     }
 
     @Override
@@ -37,7 +33,7 @@ public class ChatRecyclerViewAdapter extends
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        TdApi.Chat chat = mChats.get(position);
+        TdApi.Chat chat = chats.get(position);
         if (chat == null) return;
         holder.chatTitle.setText(chat.title);
 
@@ -73,7 +69,7 @@ public class ChatRecyclerViewAdapter extends
 
     @Override
     public int getItemCount() {
-        return mChats != null ? mChats.size() : 0;
+        return chats != null ? chats.size() : 0;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -88,8 +84,8 @@ public class ChatRecyclerViewAdapter extends
             parentView = view;
             chatTitle = view.findViewById(R.id.chat_title);
             lastMsg = view.findViewById(R.id.last_msg);
-            chatPhoto = view.findViewById(R.id.chat_img);
-            altChatPhotoText = view.findViewById(R.id.alt_chat_img);
+            chatPhoto = view.findViewById(R.id.chat_photo);
+            altChatPhotoText = view.findViewById(R.id.alt_chat_photo);
         }
 
         @Override

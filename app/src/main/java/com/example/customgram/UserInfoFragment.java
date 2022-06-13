@@ -141,7 +141,7 @@ public class UserInfoFragment extends Fragment {
                 animateMarginsToInitial();
             }
 
-            ShapeableImageView imageView = binding.expandedUserInfo.toolbarUserImg;
+            ShapeableImageView imageView = binding.expandedUserInfo.toolbarUserPhoto;
             float absValue = imageView.getHeight() * imageCornersPercentRounding;
             imageView.setShapeAppearanceModel(
                     imageView.getShapeAppearanceModel()
@@ -332,8 +332,8 @@ public class UserInfoFragment extends Fragment {
         ProfilePhotoHelper.setPhoto(
                 photoPath,
                 userFullName,
-                binding.expandedUserInfo.toolbarUserImg,
-                binding.expandedUserInfo.toolbarAltUserImg
+                binding.expandedUserInfo.toolbarUserPhoto,
+                binding.expandedUserInfo.toolbarAltUserPhoto
         );
     }
 

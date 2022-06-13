@@ -44,8 +44,8 @@ public class ToolbarUserInfoFragment extends Fragment {
         ProfilePhotoHelper.setPhoto(
                 photoPath,
                 userName,
-                binding.toolbarUserImg,
-                binding.toolbarAltUserImg
+                binding.toolbarUserPhoto,
+                binding.toolbarAltUserPhoto
         );
     }
 }
