@@ -42,17 +42,16 @@ public class ChatsActivity extends AppCompatActivity {
         return navController.navigateUp() || super.onSupportNavigateUp();
     }
 
-/*    public void openUserInfo() {
-        TdApi.User currentUser = ChatManager.getInstance().getCurrentUser().getValue();
-        customApp.executor.execute(() -> Example.executeGetUserFullInfo(currentUser));
-        navController.navigate(R.id.action_chats_fragment_to_user_info_fragment);
-    }*/
-
     public void openMessages(TdApi.Chat chat) {
         customApp.executor.execute(() ->  Example.executeGetChatHistory(chat.id));
         ChatManager.getInstance().setCurrentChat(chat);
 
         navController.navigate(R.id.action_chats_fragment_to_messages_fragment);
+    }
+
+    public void openNewGroup() {
+        customApp.executor.execute(Example::executeGetContacts);
+        navController.navigate(R.id.action_chats_fragment_to_new_group_fragment);
     }
 
     public void logOut() {

@@ -79,7 +79,14 @@ public class MessageListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
+
         activity = (AppCompatActivity) getActivity();
+
+        messages = chatManager.getMessages();
+        List<TdApi.User> userList = chatManager.getUsers();
+        for (TdApi.User user: userList) {
+            users.put(user.id, user);
+        }
     }
 
     @Override
@@ -88,8 +95,6 @@ public class MessageListFragment extends Fragment {
             ViewGroup container,
             Bundle savedInstanceState
     ) {
-        messages = chatManager.getMessages();
-        users = chatManager.getUsers();
         String chatName = chatManager.getCurrentChat().title;
         mMessageRecyclerAdapter = new MessageRecyclerViewAdapter(
                 messages,
@@ -97,7 +102,7 @@ public class MessageListFragment extends Fragment {
                 chatManager.getCurrentChat().type
         );
         chatManager.setOnNewMessage(this::updateNewMessage);
-        chatManager.setOnNewUser(this::updateNewUser);
+        chatManager.addOnNewUser(this::updateNewUser);
         chatManager.setOnNewMessages(this::updateNewMessages);
         chatManager.setOnMessageUpdate(this::updateOldMessage);
         mMessageRecyclerAdapter.setMessageNameCallback(this::getMessageSenderName);
@@ -125,8 +130,7 @@ public class MessageListFragment extends Fragment {
         );
         setHasOptionsMenu(true);
 
-        Context context = binding.getRoot().getContext();
-        LinearLayoutManager llm = new LinearLayoutManager(context);
+        LinearLayoutManager llm = new LinearLayoutManager(activity);
         llm.setReverseLayout(true);
         binding.recyclerMessages.setLayoutManager(llm);
         binding.recyclerMessages.setAdapter(mMessageRecyclerAdapter);

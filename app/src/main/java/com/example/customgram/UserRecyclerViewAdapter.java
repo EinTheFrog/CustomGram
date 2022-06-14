@@ -27,7 +27,7 @@ public class UserRecyclerViewAdapter extends
     @Override
     public UserRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_chat, parent, false);
+                .inflate(R.layout.list_item_user, parent, false);
         return new UserRecyclerViewAdapter.ViewHolder(view);
     }
 
@@ -37,7 +37,7 @@ public class UserRecyclerViewAdapter extends
         if (user == null) return;
         holder.userName.setText(user.firstName);
 
-        holder.parentView.findViewById(R.id.chat_button).setOnClickListener(v -> {
+        holder.parentView.findViewById(R.id.user_button).setOnClickListener(v -> {
             if (onUserClicked != null) {
                 onUserClicked.accept(position);
             }

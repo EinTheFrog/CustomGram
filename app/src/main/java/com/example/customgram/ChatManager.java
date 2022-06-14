@@ -23,7 +23,7 @@ public class ChatManager {
 
     private final List<TdApi.Chat> chats = new LinkedList<>();
     private final List<TdApi.Message> messages = new ArrayList<>();
-    private final Map<Long, TdApi.User> users = new HashMap<>();
+    private final List<TdApi.User> users = new ArrayList<>();
     private TdApi.Chat currentChat;
     private final MutableLiveData<TdApi.User> currentUser = new MutableLiveData<>();
     private final MutableLiveData<TdApi.UserFullInfo> selectedUserFullInfo = new MutableLiveData<>();
@@ -35,7 +35,7 @@ public class ChatManager {
     private Consumer<TdApi.Message> onNewMessage;
     private Consumer<TdApi.Message[]> onNewMessages;
     private Consumer<TdApi.Message> onMessageUpdate;
-    private Consumer<TdApi.User> onNewUser;
+    private List<Consumer<TdApi.User>> onNewUser = new ArrayList<>();
     private Consumer<TdApi.User> onUserPhotoChange;
 
     private ChatManager() {
@@ -104,9 +104,11 @@ public class ChatManager {
     }
 
     public void addUser(TdApi.User user) {
-        users.put(user.id, user);
+        users.add(user);
         if (onNewUser != null) {
-            onNewUser.accept(user);
+            for (Consumer<TdApi.User> fun: onNewUser) {
+                fun.accept(user);
+            }
         }
     }
 
@@ -135,8 +137,8 @@ public class ChatManager {
         messages.clear();
     }
 
-    public Map<Long, TdApi.User> getUsers() {
-        return new HashMap<>(users);
+    public List<TdApi.User> getUsers() {
+        return new ArrayList<>(users);
     }
 
     public void clearUsers() {
@@ -187,8 +189,12 @@ public class ChatManager {
         onMessageUpdate = fun;
     }
 
-    public void setOnNewUser(Consumer<TdApi.User> fun) {
-        onNewUser = fun;
+    public void addOnNewUser(Consumer<TdApi.User> fun) {
+        onNewUser.add(fun);
+    }
+
+    public void removeOnNewUser(Consumer<TdApi.User> fun) {
+        onNewUser.remove(fun);
     }
 
     public void setOnUserPhotoChange(Consumer<TdApi.User> fun) {

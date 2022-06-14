@@ -71,10 +71,13 @@ public final class Example {
     private static boolean haveFullMainChatList = false;
 
     private static final List<TdApi.Message> currentMessages = new ArrayList<>();
-    private static final ConcurrentHashMap<Integer, TdApi.Message> photoIdsToMessages = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, TdApi.Message> photoIdsToMessages
+            = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<Long, TdApi.User> users = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Integer, Long> photoIdsToUserIds = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Long, TdApi.User> users
+            = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Integer, Long> photoIdsToUserIds
+            = new ConcurrentHashMap<>();
 
     private static final String newLine = System.getProperty("line.separator");
 
@@ -258,6 +261,10 @@ public final class Example {
         client.send(new TdApi.GetUserFullInfo(user.id), userFullInfoHandler);
     }
 
+    public static void executeGetContacts() {
+        client.send(new TdApi.GetContacts(), new UsersHandler());
+    }
+
     public static void executeLogOut() {
         chats.clear();
         mainChatList.clear();
@@ -419,6 +426,20 @@ public final class Example {
             }
             TdApi.UserFullInfo userFullInfo = (TdApi.UserFullInfo) object;
             chatManager.setSelectedUserFullInfo(userFullInfo);
+        }
+    }
+
+    private static class  UsersHandler implements Client.ResultHandler {
+        @Override
+        public void onResult(TdApi.Object object) {
+            if (object.getConstructor() != TdApi.Users.CONSTRUCTOR) {
+                Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+                return;
+            }
+            TdApi.Users users = (TdApi.Users) object;
+            for (long userId: users.userIds) {
+                client.send(new TdApi.GetUser(userId), new UserHandler());
+            }
         }
     }
 

@@ -39,8 +39,6 @@ public class UserInfoFragment extends Fragment {
     private static final String TAG = "USER_INFO_FRAGMENT";
     private static final int toolbarMargin = 10;
 
-    private final int animationDuration = 200;
-
     private UserInfoFragmentBinding binding;
     private ChatsActivity activity;
     private boolean animationShowed = false;
@@ -53,12 +51,17 @@ public class UserInfoFragment extends Fragment {
     private float initialTextSize = 0.0f;
     private float toolbarTextSize = 0.0f;
     private float textSize = 0.0f;
+    private int animationDuration;
 
     @SuppressLint("RestrictedApi")
     @Override
     public void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         activity = (ChatsActivity) getActivity();
+
+        animationDuration = getResources().getInteger(
+                android.R.integer.config_shortAnimTime
+        );
 
         TextAppearance textAppearance = new TextAppearance(
                 activity,

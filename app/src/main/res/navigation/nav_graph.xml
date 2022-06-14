@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_chats_fragment_to_user_info_fragment"
             app:destination="@id/user_info_fragment" />
+        <action
+            android:id="@+id/action_chats_fragment_to_new_group_fragment"
+            app:destination="@id/new_group_fragment" />
     </fragment>
     <fragment
         android:id="@+id/messages_fragment"
@@ -39,6 +42,14 @@
         tools:layout="@layout/user_info_fragment">
         <action
             android:id="@+id/action_user_info_fragment_to_chats_fragment"
+            app:popUpTo="@id/chats_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/new_group_fragment"
+        android:name="com.example.customgram.NewGroupFragment"
+        tools:layout="@layout/new_group_fragment">
+        <action
+            android:id="@+id/action_new_group_fragment_to_chats_fragment"
             app:popUpTo="@id/chats_fragment" />
     </fragment>
 </navigation>

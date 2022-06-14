@@ -20,6 +20,13 @@ public class NavigationMenuFragment extends Fragment {
     ) {
         NavigationMenuFragmentBinding binding
                 = NavigationMenuFragmentBinding.inflate(getLayoutInflater());
+
+        ChatsActivity activity = (ChatsActivity) getActivity();
+        binding.newGroupButton.setOnClickListener(view -> {
+            if (activity == null) return;
+            activity.openNewGroup();
+        });
+
         return binding.getRoot();
     }
 }
