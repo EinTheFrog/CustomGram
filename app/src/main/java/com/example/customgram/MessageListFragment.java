@@ -12,8 +12,6 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,7 +20,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -45,8 +42,8 @@ public class MessageListFragment extends Fragment {
     private static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 0;
 
     private final ChatManager chatManager = ChatManager.getInstance();
-    private List<TdApi.Message> messages;
-    private Map<Long, TdApi.User> users;
+    private List<TdApi.Message> messages = new ArrayList<>();
+    private Map<Long, TdApi.User> users = new HashMap<>();
     private final Map<Long, List<TdApi.Message>> messagesWithoutTitle = new HashMap<>();
     private MessageRecyclerViewAdapter mMessageRecyclerAdapter;
     private AppCompatActivity activity;
