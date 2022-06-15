@@ -23,6 +23,7 @@ public class NewGroupFragment extends Fragment {
     private List<TdApi.User> selectedUsers;
     private UserRecyclerViewAdapter userAdapter;
     private SelectedUserRecyclerViewAdapter selectedUserAdapter;
+    private NewGroupFragmentBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public class NewGroupFragment extends Fragment {
             ViewGroup container,
             Bundle savedInstanceState
     ) {
-        NewGroupFragmentBinding binding = NewGroupFragmentBinding.inflate(
+        binding = NewGroupFragmentBinding.inflate(
                 inflater,
                 container,
                 false
@@ -58,6 +59,10 @@ public class NewGroupFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(activity);
         lm.setOrientation(RecyclerView.HORIZONTAL);
         binding.recyclerSelectedUsers.setLayoutManager(lm);
+
+        binding.fab.setOnClickListener(view -> {
+
+        });
 
         return binding.getRoot();
     }
@@ -86,6 +91,10 @@ public class NewGroupFragment extends Fragment {
             if (selectedUsers.contains(user)) return;
             selectedUsers.add(user);
             selectedUserAdapter.notifyItemInserted(selectedUsers.size() - 1);
+
+            if (selectedUsers.size() == 1) {
+                binding.fab.setVisibility(View.VISIBLE);
+            }
         });
     }
 
@@ -95,6 +104,10 @@ public class NewGroupFragment extends Fragment {
             if (!selectedUsers.contains(user)) return;
             selectedUsers.remove(user);
             selectedUserAdapter.notifyItemRemoved(pos);
+
+            if (selectedUsers.size() == 0) {
+                binding.fab.setVisibility(View.GONE);
+            }
         });
     }
 }
