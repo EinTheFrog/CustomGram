@@ -35,7 +35,7 @@ public class ChatManager {
     private Consumer<TdApi.Message> onNewMessage;
     private Consumer<TdApi.Message[]> onNewMessages;
     private Consumer<TdApi.Message> onMessageUpdate;
-    private List<Consumer<TdApi.User>> onNewUser = new ArrayList<>();
+    private final List<Consumer<TdApi.User>> onNewUser = new ArrayList<>();
     private Consumer<TdApi.User> onUserPhotoChange;
 
     private ChatManager() {

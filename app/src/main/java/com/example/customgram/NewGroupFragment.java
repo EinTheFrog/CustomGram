@@ -7,18 +7,22 @@ import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.customgram.databinding.NewGroupFragmentBinding;
 
 import org.drinkless.td.libcore.telegram.TdApi;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class NewGroupFragment extends Fragment {
     private final ChatManager chatManager = ChatManager.getInstance();
     private ChatsActivity activity;
     private List<TdApi.User> users;
+    private List<TdApi.User> selectedUsers;
+    private UserRecyclerViewAdapter userAdapter;
+    private SelectedUserRecyclerViewAdapter selectedUserAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,7 @@ public class NewGroupFragment extends Fragment {
         activity = (ChatsActivity) getActivity();
 
         users = chatManager.getUsers();
+        selectedUsers = new ArrayList<>();
         chatManager.addOnNewUser(this::updateNewUser);
     }
 
@@ -42,9 +47,17 @@ public class NewGroupFragment extends Fragment {
                 false
         );
 
-        UserRecyclerViewAdapter userAdapter = new UserRecyclerViewAdapter(users);
+        userAdapter = new UserRecyclerViewAdapter(users);
+        userAdapter.setOnUserClicked(this::selectUser);
         binding.recyclerUsers.setAdapter(userAdapter);
         binding.recyclerUsers.setLayoutManager(new LinearLayoutManager(activity));
+
+        selectedUserAdapter = new SelectedUserRecyclerViewAdapter(selectedUsers);
+        selectedUserAdapter.setOnUserClicked(this::unselectUser);
+        binding.recyclerSelectedUsers.setAdapter(selectedUserAdapter);
+        LinearLayoutManager lm = new LinearLayoutManager(activity);
+        lm.setOrientation(RecyclerView.HORIZONTAL);
+        binding.recyclerSelectedUsers.setLayoutManager(lm);
 
         return binding.getRoot();
     }
@@ -52,7 +65,26 @@ public class NewGroupFragment extends Fragment {
     private void updateNewUser(TdApi.User user) {
         users.add(user);
         activity.runOnUiThread(() -> {
+            int pos = users.indexOf(user);
+            userAdapter.notifyItemInserted(pos);
+        });
+    }
 
+    private void selectUser(int pos) {
+        activity.runOnUiThread(() -> {
+            TdApi.User user = users.get(pos);
+            if (selectedUsers.contains(user)) return;
+            selectedUsers.add(user);
+            selectedUserAdapter.notifyItemInserted(selectedUsers.size() - 1);
+        });
+    }
+
+    private void unselectUser(int pos) {
+        activity.runOnUiThread(() -> {
+            TdApi.User user = selectedUsers.get(pos);
+            if (!selectedUsers.contains(user)) return;
+            selectedUsers.remove(user);
+            selectedUserAdapter.notifyItemRemoved(pos);
         });
     }
 }
