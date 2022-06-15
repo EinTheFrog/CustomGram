@@ -48,7 +48,7 @@ public class NewGroupFragment extends Fragment {
         );
 
         userAdapter = new UserRecyclerViewAdapter(users);
-        userAdapter.setOnUserClicked(this::selectUser);
+        userAdapter.setOnUserClicked(this::onUserClicked);
         binding.recyclerUsers.setAdapter(userAdapter);
         binding.recyclerUsers.setLayoutManager(new LinearLayoutManager(activity));
 
@@ -68,6 +68,16 @@ public class NewGroupFragment extends Fragment {
             int pos = users.indexOf(user);
             userAdapter.notifyItemInserted(pos);
         });
+    }
+
+    private void onUserClicked(int pos) {
+        TdApi.User user = users.get(pos);
+        if (selectedUsers.contains(user)) {
+            pos = selectedUsers.indexOf(user);
+            unselectUser(pos);
+        } else {
+            selectUser(pos);
+        }
     }
 
     private void selectUser(int pos) {
