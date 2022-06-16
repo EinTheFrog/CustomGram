@@ -51,5 +51,16 @@
         <action
             android:id="@+id/action_new_group_fragment_to_chats_fragment"
             app:popUpTo="@id/chats_fragment" />
+        <action
+            android:id="@+id/action_new_group_fragment_to_new_group_options_fragment"
+            app:destination="@id/new_group_options_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/new_group_options_fragment"
+        android:name="com.example.customgram.NewGroupOptionsFragment"
+        tools:layout="@layout/new_group_options_fragment">
+        <action
+            android:id="@+id/action_new_group_options_fragment_to_new_group_fragment"
+            app:popUpTo="@id/new_group_fragment" />
     </fragment>
 </navigation>

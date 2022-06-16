@@ -110,7 +110,6 @@ public class MessageListFragment extends Fragment {
                 false
         );
 
-        //activity.setSupportActionBar(binding.customToolbar);
         binding.customToolbar.inflateMenu(R.menu.messages_optins_menu);
 
         NavController navController = Navigation.findNavController(

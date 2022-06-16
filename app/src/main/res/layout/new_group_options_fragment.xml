@@ -19,17 +19,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </androidx.appcompat.widget.Toolbar>
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_selected_users"
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/group_photo"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        android:background="?colorAccent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/custom_toolbar"
+        app:shapeAppearanceOverlay="@style/AppTheme.roundedImageViewRounded"
+        app:srcCompat="@android:drawable/ic_menu_gallery"
+        app:strokeColor="@null" />
+    <EditText
+        android:id="@+id/group_title"
+        style="@style/AppTheme.ChatTitle"
+        android:textAppearance="?textAppearanceHeadline6"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="10dp"
+        app:layout_constraintLeft_toRightOf="@id/group_photo"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/custom_toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/custom_toolbar"
+        app:layout_constraintBottom_toTopOf="@id/recycler_users" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_users"
         android:layout_width="0dp"
@@ -40,13 +53,12 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recycler_selected_users"
+        app:layout_constraintTop_toBottomOf="@id/group_photo"
         app:layout_constraintBottom_toBottomOf="parent" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:layout_margin="40dp"
         android:rotation="180"
         android:src="?attr/actionModeCloseDrawable"

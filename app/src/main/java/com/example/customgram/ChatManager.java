@@ -24,6 +24,7 @@ public class ChatManager {
     private final List<TdApi.Chat> chats = new LinkedList<>();
     private final List<TdApi.Message> messages = new ArrayList<>();
     private final List<TdApi.User> users = new ArrayList<>();
+    private final List<TdApi.User> newGroupUsers = new ArrayList<>();
     private TdApi.Chat currentChat;
     private final MutableLiveData<TdApi.User> currentUser = new MutableLiveData<>();
     private final MutableLiveData<TdApi.UserFullInfo> selectedUserFullInfo = new MutableLiveData<>();
@@ -121,6 +122,14 @@ public class ChatManager {
         }
     }
 
+    public void addNewGroupUser(TdApi.User user) {
+        newGroupUsers.add(user);
+    }
+
+    public void removeNewGroupUser(TdApi.User user) {
+        newGroupUsers.remove(user);
+    }
+
     public List<TdApi.Chat> getChats() {
         return new LinkedList<>(chats);
     }
@@ -141,8 +150,12 @@ public class ChatManager {
         return new ArrayList<>(users);
     }
 
-    public void clearUsers() {
-        users.clear();
+    public List<TdApi.User> getNewGroupUsers() {
+        return new ArrayList<>(newGroupUsers);
+    }
+
+    public void clearNewGroupUsers() {
+        newGroupUsers.clear();
     }
 
     public void setCurrentChat(TdApi.Chat chat) {

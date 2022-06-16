@@ -28,6 +28,7 @@ public class NewGroupFragment extends Fragment {
     private UserRecyclerViewAdapter userAdapter;
     private SelectedUserRecyclerViewAdapter selectedUserAdapter;
     private NewGroupFragmentBinding binding;
+    private NavController navController;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,8 +36,13 @@ public class NewGroupFragment extends Fragment {
 
         activity = (ChatsActivity) getActivity();
 
+        navController = Navigation.findNavController(
+                activity,
+                R.id.nav_host_fragment
+        );
+
         users = chatManager.getUsers();
-        selectedUsers = new ArrayList<>();
+        selectedUsers = chatManager.getNewGroupUsers();
         chatManager.addOnNewUser(this::updateNewUser);
     }
 
@@ -65,14 +71,12 @@ public class NewGroupFragment extends Fragment {
         binding.recyclerSelectedUsers.setLayoutManager(lm);
 
         binding.fab.setOnClickListener(view -> {
-
+            navController.navigate(R.id.action_new_group_fragment_to_new_group_options_fragment);
         });
+        if (!selectedUsers.isEmpty()) {
+            binding.fab.setVisibility(View.VISIBLE);
+        }
 
-
-        NavController navController = Navigation.findNavController(
-                activity,
-                R.id.nav_host_fragment
-        );
         AppBarConfiguration.Builder appBarConfBuilder =
                 new AppBarConfiguration.Builder(navController.getGraph());
         AppBarConfiguration appBarConfiguration = appBarConfBuilder.build();
@@ -83,6 +87,12 @@ public class NewGroupFragment extends Fragment {
         );
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        chatManager.clearNewGroupUsers();
     }
 
     private void updateNewUser(TdApi.User user) {
@@ -106,6 +116,7 @@ public class NewGroupFragment extends Fragment {
     private void selectUser(int pos) {
         activity.runOnUiThread(() -> {
             TdApi.User user = users.get(pos);
+            ChatManager.getInstance().addNewGroupUser(user);
             if (selectedUsers.contains(user)) return;
             selectedUsers.add(user);
             selectedUserAdapter.notifyItemInserted(selectedUsers.size() - 1);
@@ -119,6 +130,7 @@ public class NewGroupFragment extends Fragment {
     private void unselectUser(int pos) {
         activity.runOnUiThread(() -> {
             TdApi.User user = selectedUsers.get(pos);
+            ChatManager.getInstance().removeNewGroupUser(user);
             if (!selectedUsers.contains(user)) return;
             selectedUsers.remove(user);
             selectedUserAdapter.notifyItemRemoved(pos);
