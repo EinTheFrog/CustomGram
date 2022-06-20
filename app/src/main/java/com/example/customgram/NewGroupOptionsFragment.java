@@ -37,7 +37,7 @@ public class NewGroupOptionsFragment extends Fragment {
 
     private ChatsActivity activity;
     private NewGroupOptionsFragmentBinding binding;
-    private String imagePath = null;
+    private String chatPhotoPath = null;
 
     private ActivityResultLauncher<String> permissionRequestLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
@@ -84,6 +84,17 @@ public class NewGroupOptionsFragment extends Fragment {
         binding.recyclerUsers.setLayoutManager(new LinearLayoutManager(activity));
 
         binding.groupPhoto.setOnClickListener(view -> tryToLoadImage());
+        binding.fab.setOnClickListener(view -> {
+            String title = binding.groupTitle.getText().toString();
+            if (title.equals("")) {
+                return;
+            }
+            long[] userIds = new long[users.size()];
+            for (int i = 0; i < users.size(); i++) {
+                userIds[i] = users.get(i).id;
+            }
+            activity.createGroup(userIds, title, chatPhotoPath);
+        });
 
         NavController navController = Navigation.findNavController(
                 activity,
@@ -122,15 +133,14 @@ public class NewGroupOptionsFragment extends Fragment {
     }
 
     private void copyPhotoFromGallery(Uri uri, String dir) {
-        imagePath = dir + getFileName(uri);
-        try (FileOutputStream out = new FileOutputStream(imagePath)) {
+        chatPhotoPath = dir + getFileName(uri);
+        try (FileOutputStream out = new FileOutputStream(chatPhotoPath)) {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
             binding.groupPhoto.setImageBitmap(bitmap);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);
         }
-
     }
 
     private String getFileName(Uri uri) {

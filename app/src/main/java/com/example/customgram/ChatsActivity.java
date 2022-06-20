@@ -59,6 +59,11 @@ public class ChatsActivity extends AppCompatActivity {
         customApp.executor.execute(Example::executeLogOut);
     }
 
+    public void createGroup(long[] userIds, String title, String chatPhotoPath) {
+        customApp.executor.execute(() -> Example.executeCreateGroup(userIds, title, chatPhotoPath));
+        navController.navigate(R.id.action_new_group_options_fragment_to_chats_fragment);
+    }
+
     private void startTdLoop(String dbDir) {
         String logFileName = "/tdlib.log";
         customApp.executor.execute(() -> {

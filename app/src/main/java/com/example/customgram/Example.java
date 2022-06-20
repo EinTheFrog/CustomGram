@@ -265,6 +265,10 @@ public final class Example {
         client.send(new TdApi.GetContacts(), new UsersHandler());
     }
 
+    public static void executeCreateGroup(long[] userIds, String title, String photoPath) {
+        client.send(new TdApi.CreateNewBasicGroupChat(userIds, title), new NewGroupHandler(photoPath));
+    }
+
     public static void executeLogOut() {
         chats.clear();
         mainChatList.clear();
@@ -455,6 +459,28 @@ public final class Example {
                 default:
                     Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
             }
+        }
+    }
+
+    private static class NewGroupHandler implements Client.ResultHandler {
+        String chatPhotoPath;
+        public NewGroupHandler(String chatPhotoPath) {
+            this.chatPhotoPath = chatPhotoPath;
+        }
+
+        @Override
+        public void onResult(TdApi.Object object) {
+            if (object.getConstructor() != TdApi.Chat.CONSTRUCTOR) {
+                Log.e(TAG, "Received wrong response from TDLib:" + newLine + object);
+                return;
+            }
+            TdApi.Chat newChat = (TdApi.Chat) object;
+            addChat(newChat);
+
+            if (chatPhotoPath == null) return;
+            TdApi.InputFile chatPhotoFile = new TdApi.InputFileLocal(chatPhotoPath);
+            TdApi.InputChatPhotoStatic chatPhoto = new TdApi.InputChatPhotoStatic(chatPhotoFile);
+            client.send(new TdApi.SetChatPhoto(newChat.id, chatPhoto), defaultHandler);
         }
     }
 
